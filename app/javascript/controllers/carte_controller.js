@@ -30,6 +30,7 @@ export default class extends Controller {
 
     this.calque = L.layerGroup().addTo(this.carte)
     this.carte.on("moveend", () => this.recenser())
+    this.carte.on("zoomend", () => this.restyler())
     this.recenser()
   }
 
@@ -79,17 +80,29 @@ export default class extends Controller {
 
   dessiner(ronds_points) {
     this.calque.clearLayers()
+    const aspect = this.aspect()
 
     for (const rond_point of ronds_points) {
-      L.circleMarker([rond_point.lat, rond_point.lon], {
-        radius: 5,
-        weight: 1,
-        color: "#1c3d5a",
-        fillColor: "#4a7fa5",
-        fillOpacity: 0.85
-      })
+      L.circleMarker([rond_point.lat, rond_point.lon], aspect)
         .bindPopup(this.fiche(rond_point))
         .addTo(this.calque)
+    }
+  }
+
+  restyler() {
+    const aspect = this.aspect()
+    this.calque.eachLayer((marqueur) => marqueur.setStyle(aspect))
+  }
+
+  aspect() {
+    const echelle = this.carte.getZoom() - 5
+
+    return {
+      radius: Math.min(8, Math.max(2, 2 + echelle * 0.7)),
+      weight: this.carte.getZoom() >= 10 ? 1 : 0,
+      fillOpacity: Math.min(0.85, Math.max(0.3, 0.3 + echelle * 0.07)),
+      color: "#1c3d5a",
+      fillColor: "#4a7fa5"
     }
   }
 

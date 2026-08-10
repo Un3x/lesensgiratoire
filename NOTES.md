@@ -21,6 +21,8 @@ Mesuré dans Chromium et Firefox sur les 60 046 ouvrages, sans avertissement con
 - **En revanche l'affichage national n'est pas représentatif.** À l'échelle de la France, 38 956 ronds-points relèvent du seuil de vingt mètres et le plafond de 2 000 marqueurs en écarte 95 %. Les retenus sont les plus grands diamètres : une région dense en petits ouvrages paraît vide alors qu'elle est recensée. L'état l'énonce, mais la carte donne une image fausse de la répartition.
 - Le plafond ne se fait plus sentir dès l'échelle de l'agglomération : Bordeaux 663 ouvrages, Lille 352, Marseille 287, Strasbourg 147, tous servis. La région parisienne au sens large en compte 3 623 et reste tronquée.
 - Aucun regroupement de marqueurs n'est implémenté. Un échantillonnage réparti dans l'emprise, ou un agrégat par maille, rendrait la vue nationale honnête — ce n'est pas fait.
+- Le rayon et l'opacité des marqueurs suivent le niveau de zoom, et le liseré ne réapparaît qu'à partir du zoom 10 : les zones denses se lisent en dégradé au lieu de former une masse. Cela corrige la lisibilité, pas la représentativité — les 95 % écartés par le plafond le restent.
+- Leaflet 1.9.4 émet deux avertissements de dépréciation dans Firefox (`MouseEvent.mozPressure`, `MouseEvent.mozInputSource`) au glisser-déposer de la carte, et à cette seule occasion. Ils viennent de la bibliothèque, pas du code du site.
 
 ## Photographies
 
