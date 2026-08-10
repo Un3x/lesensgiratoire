@@ -28,12 +28,16 @@ Mesuré dans Chromium et Firefox sur les 60 046 ouvrages, sans avertissement con
 
 - Une observation porte soit un fichier joint, soit une adresse distante (`image_url`), jamais rien. Les clichés Panoramax ne sont pas téléchargés : le dépôt ne les héberge pas et le service public n'est pas ré-hébergé.
 - L'attribution — auteur, licence, lien vers la source — est exigée par validation dès qu'une observation est distante, et rendue sous chaque cliché. Les licences sont mélangées, `etalab-2.0` et `CC-BY-SA-4.0` : elles ne sont jamais globalisées en pied de page.
-- **L'asset `sd` de Panoramax est une panoramique équirectangulaire** (2048 × 1024, rapport exactement 2:1). Rendu tel quel dans la timeline, il paraît déformé. L'asset `thumb` est un cadrage plat (500 × 300, 29 Ko) et se présente bien mieux. Le chargeur retient `url`, donc le `sd` : à arbitrer.
-- Le JSONL porte aussi `thumb`, `i`, `ecart_deg` et `distance_m` : rien n'est conservé. `ecart_deg` donnerait de quoi recadrer une vue rectilinéaire dans la panoramique, si l'on va par là.
+- 2 770 observations Panoramax sont versées, une par ouvrage, sur 2 771 ronds-points illustrés — 4,6 % du recensement. Diamètre médian des ouvrages illustrés : 22,5 m, contre 24,5 m pour l'ensemble. Prises de vue de 2010 à 2026.
+- **Le `sd` est retenu, pas le `thumb`.** Le `thumb` fait invariablement 500 px de large pour 26 Ko médians ; la colonne de la fiche en fait 576. Il s'afficherait donc plus étroit que la mise en page ne le permet, et flou sur écran à haute densité. Le `sd` fait 2 048 px pour 120 à 580 Ko, s'affiche en 576 × 433 et reste net. Une fiche ne porte qu'une observation et l'image est chargée en différé chez Panoramax : le poids est supportable. Le `thumb` redeviendra le bon choix le jour où une vue de liste ou une galerie affichera plusieurs clichés à la fois.
+- Sur 30 clichés échantillonnés, 3 sont des panoramiques équirectangulaires 2:1 et 27 des photographies ordinaires en 4:3 ou 16:9. La réserve formulée avant livraison ne concerne donc qu'environ un dixième du lot.
+- **Le cadrage n'est pas garanti.** L'écart médian entre l'axe de prise de vue et l'ouvrage est de 21°, avec un maximum à 60° : 84 % des clichés restent sous 35°, soit à peu près la demi-ouverture d'un objectif courant. Le reste ne montre pas le rond-point — la fiche 561 en donne l'exemple, on y voit un trottoir. Aucun tri sur `ecart_deg` n'est fait à l'ingestion.
+- `i`, `thumb`, `ecart_deg`, `distance_m` et `rapport` ne sont pas conservés. `rapport` vaut approximativement la distance de prise de vue divisée par le rayon de l'ouvrage — médiane 1,89, soit un objectif situé juste à l'extérieur de l'anneau.
+- Le JSONL est versé au dépôt en clair (1,2 Mo). Compressé il ferait 183 Ko ; il n'a pas été gzippé faute d'instruction, la tâche rake lisant les deux.
 - Aucune variante d'image : `image_processing` n'est pas installé, les fichiers joints sont servis à leur taille d'origine.
 - Aucune modération, aucune limitation de débit, aucun plafond de taille sur les versements.
 - Le formulaire de versement n'expose pas `image_url` et le contrôleur ne l'accepte pas : une adresse distante n'entre que par `bin/rails panoramax:import`. Un visiteur ne peut pas faire pointer une observation vers une image arbitraire.
-- La base de développement contient une observation Panoramax réelle sur la fiche n° 13, versée pour vérifier le rendu.
+- La base de développement contient une observation Panoramax supplémentaire sur la fiche n° 13, versée à la main avant livraison pour vérifier le rendu. Elle n'est pas dans le JSONL.
 
 ## Avis
 
