@@ -1,10 +1,129 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+:root {
+  --encre: #1b2733;
+  --encre-attenuee: #5a6672;
+  --papier: #f6f4ef;
+  --papier-fonce: #eae6dd;
+  --filet: #c9c2b4;
+  --accent: #1c3d5a;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+a { color: var(--accent); }
+
+.entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.5rem;
+  background: var(--papier-fonce);
+  border-bottom: 1px solid var(--filet);
+}
+
+.entete__titre {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  color: var(--encre);
+  text-decoration: none;
+}
+
+.entete__sous-titre {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--encre-attenuee);
+}
+
+.entete__navigation { display: flex; gap: 1.25rem; font-size: 0.95rem; }
+
+.contenu { flex: 1; display: flex; flex-direction: column; }
+
+.pied {
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--filet);
+  background: var(--papier-fonce);
+  color: var(--encre-attenuee);
+  font-size: 0.8rem;
+}
+
+.pied p { margin: 0; }
+
+.notifications { padding: 0.75rem 1.5rem 0; }
+
+.notification {
+  margin: 0 0 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  background: var(--papier-fonce);
+  font-size: 0.92rem;
+}
+
+.notification--alert { border-left-color: #8a2f2f; }
+
+/* Carte */
+
+.page-carte .contenu { overflow: hidden; }
+
+.carte { position: relative; flex: 1; min-height: 60vh; }
+
+.carte__toile { position: absolute; inset: 0; }
+
+.carte__panneau {
+  position: absolute;
+  z-index: 500;
+  top: 1rem;
+  left: 1rem;
+  width: min(23rem, calc(100% - 2rem));
+  padding: 1rem 1.15rem;
+  background: rgba(246, 244, 239, 0.96);
+  border: 1px solid var(--filet);
+}
+
+.carte__panneau h1 {
+  margin: 0 0 0.8rem;
+  font-family: var(--serif);
+  font-size: 1.12rem;
+  font-weight: 600;
+}
+
+.carte__reglage label { display: block; font-size: 0.85rem; color: var(--encre-attenuee); }
+
+.carte__curseur { display: flex; align-items: center; gap: 0.75rem; margin: 0.4rem 0; }
+
+.carte__curseur input { flex: 1; accent-color: var(--accent); }
+
+.carte__curseur output { font-variant-numeric: tabular-nums; font-size: 0.9rem; min-width: 3.5rem; }
+
+.carte__mention { margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--encre-attenuee); }
+
+.carte__etat {
+  margin: 0.9rem 0 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--filet);
+  font-size: 0.85rem;
+}
+
+.carte__infobulle-titre { margin: 0 0 0.35rem; font-family: var(--serif); font-size: 1rem; }
+
+.carte__infobulle p { margin: 0 0 0.2rem; }
+
+.leaflet-container { font-family: var(--sans); background: var(--papier-fonce); }

@@ -1,0 +1,31 @@
+<% content_for :title, "Le Sens Giratoire — carte du recensement" %>
+<% content_for :body_class, "page-carte" %>
+
+<section class="carte"
+  data-controller="carte"
+  data-carte-url-value="<%= roundabouts_path(format: :json) %>"
+  data-carte-fiche-url-value="<%= roundabouts_path %>"
+  data-carte-min-diameter-value="<%= Roundabout::DEFAULT_MIN_DIAMETER_M %>"
+  data-carte-center-value="[46.6, 2.4]"
+  data-carte-zoom-value="6">
+
+  <div class="carte__toile" data-carte-target="toile"></div>
+
+  <div class="carte__panneau">
+    <h1>Recensement des ronds-points de France</h1>
+
+    <div class="carte__reglage">
+      <label for="seuil">Diamètre minimal retenu pour l'affichage</label>
+      <div class="carte__curseur">
+        <input type="range" id="seuil" min="0" max="60" step="1"
+          value="<%= Roundabout::DEFAULT_MIN_DIAMETER_M %>"
+          data-carte-target="seuil"
+          data-action="input->carte#seuilModifie">
+        <output data-carte-target="seuilValeur"><%= Roundabout::DEFAULT_MIN_DIAMETER_M %> m</output>
+      </div>
+      <p class="carte__mention">En deçà de vingt mètres, l'ouvrage relève le plus souvent de la raquette de retournement. Le seuil ne conditionne que l'affichage.</p>
+    </div>
+
+    <p class="carte__etat" role="status" aria-live="polite" data-carte-target="etat">Relevé en cours.</p>
+  </div>
+</section>

@@ -12,6 +12,9 @@ class Roundabout < ApplicationRecord
   normalizes :name, with: -> { it&.strip.presence }
 
   scope :at_least, ->(diameter) { where(diameter_m: diameter..) }
+  scope :within, ->(west, south, east, north) {
+    where(lat: south..north).where(lon: west..east)
+  }
   scope :around, ->(lat, lon, radius_m = MATCH_RADIUS_M) {
     lat_delta = radius_m / 111_320.0
     lon_delta = lat_delta / Math.cos(lat * Math::PI / 180)

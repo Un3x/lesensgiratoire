@@ -21,6 +21,8 @@ module Lesensgiratoire
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
+    config.assets.paths << Rails.root.join("vendor/assets/stylesheets")
+
     config.time_zone = "Europe/Paris"
     config.i18n.default_locale = :fr
   end
