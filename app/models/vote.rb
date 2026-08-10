@@ -1,15 +1,13 @@
 class Vote < ApplicationRecord
-  CATEGORIES = %w[plus_beau plus_moche moins_entretenu].freeze
-
   belongs_to :roundabout
 
-  enum :category, CATEGORIES.index_by(&:to_sym)
-
-  validates :category, presence: true
+  validates :liked, inclusion: { in: [ true, false ], message: "doit être favorable ou défavorable" }
   validates :year, presence: true, numericality: { only_integer: true, in: 2000..2100 }
   validates :voter_token, presence: true
-  validates :roundabout_id, uniqueness: { scope: [ :category, :year, :voter_token ],
-    message: "a déjà fait l'objet d'un suffrage dans cette catégorie pour cette année" }
+  validates :roundabout_id, uniqueness: { scope: [ :year, :voter_token ],
+    message: "a déjà recueilli votre avis au titre de cet exercice" }
 
   scope :for_year, ->(year) { where(year: year) }
+  scope :favorable, -> { where(liked: true) }
+  scope :defavorable, -> { where(liked: false) }
 end

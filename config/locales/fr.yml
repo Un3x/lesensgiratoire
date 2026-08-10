@@ -35,11 +35,3 @@ fr:
           attributes:
             image:
               blank: doit être jointe
-  categories:
-    plus_beau: Le plus beau rond-point
-    plus_moche: Le plus moche rond-point
-    moins_entretenu: Le rond-point le moins bien entretenu
-  category_actions:
-    plus_beau: Désigner comme le plus beau
-    plus_moche: Désigner comme le plus moche
-    moins_entretenu: Désigner comme le moins bien entretenu

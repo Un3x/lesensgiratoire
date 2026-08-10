@@ -4,15 +4,18 @@ class PalmaresController < ApplicationController
   def show
     @year = (params[:year] || Date.current.year).to_i
     @years = (Vote.distinct.pluck(:year) | [ Date.current.year ]).sort.reverse
-    @rankings = Vote::CATEGORIES.index_with { classement(it) }
+    @classements = [
+      { titre: "Les ronds-points les plus appréciés", colonne: "Avis favorables", ouvrages: classement(true) },
+      { titre: "Les ronds-points les moins appréciés", colonne: "Avis défavorables", ouvrages: classement(false) }
+    ]
   end
 
   private
-    def classement(category)
+    def classement(liked)
       Roundabout
         .joins(:votes)
-        .where(votes: { category: category, year: @year })
-        .select("roundabouts.*, COUNT(votes.id) AS suffrages")
+        .where(votes: { liked: liked, year: @year })
+        .select("roundabouts.*, COUNT(votes.id) AS avis")
         .group("roundabouts.id")
         .order(Arel.sql("COUNT(votes.id) DESC"), :id)
         .limit(TOP)

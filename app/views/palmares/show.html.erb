@@ -16,39 +16,39 @@
     <% end %>
   </p>
 
-  <% @rankings.each do |category, classement| %>
+  <% @classements.each do |classement| %>
     <section class="palmares__categorie">
-      <h2><%= t("categories.#{category}") %> <%= @year %></h2>
+      <h2><%= classement[:titre] %> en <%= @year %></h2>
 
-      <% if classement.any? %>
+      <% if classement[:ouvrages].any? %>
         <table class="classement">
-          <caption>Classement établi au vu des suffrages exprimés, arrêté aux vingt premiers.</caption>
+          <caption>Classement établi au vu des avis exprimés, arrêté aux vingt premiers.</caption>
           <thead>
             <tr>
               <th scope="col">Rang</th>
               <th scope="col">Ouvrage</th>
               <th scope="col">Commune</th>
               <th scope="col">Département</th>
-              <th scope="col">Suffrages</th>
+              <th scope="col"><%= classement[:colonne] %></th>
             </tr>
           </thead>
           <tbody>
             <% precedent = rang = nil %>
-            <% classement.each_with_index do |roundabout, index| %>
-              <% rang = index + 1 unless roundabout.suffrages == precedent %>
-              <% precedent = roundabout.suffrages %>
+            <% classement[:ouvrages].each_with_index do |roundabout, index| %>
+              <% rang = index + 1 unless roundabout.avis == precedent %>
+              <% precedent = roundabout.avis %>
               <tr>
                 <td><%= rang %></td>
                 <td><%= link_to roundabout.designation, roundabout %></td>
                 <td><%= roundabout.commune.presence || "Non renseignée" %></td>
                 <td><%= roundabout.departement.presence || "Non renseigné" %></td>
-                <td><%= roundabout.suffrages %></td>
+                <td><%= roundabout.avis %></td>
               </tr>
             <% end %>
           </tbody>
         </table>
       <% else %>
-        <p class="etat-vide">Aucun suffrage n'a été exprimé dans cette catégorie au titre de l'exercice <%= @year %>.</p>
+        <p class="etat-vide">Aucun avis de cette nature n'a été exprimé au titre de l'exercice <%= @year %>.</p>
       <% end %>
     </section>
   <% end %>

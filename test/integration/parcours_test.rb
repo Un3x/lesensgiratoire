@@ -29,7 +29,7 @@ class ParcoursTest < ActionDispatch::IntegrationTest
     assert_equal 0, response.parsed_body["total"]
   end
 
-  test "de la carte à la fiche puis au suffrage jusqu'au palmarès" do
+  test "de la carte à la fiche puis à l'avis jusqu'au palmarès" do
     get root_path
     assert_response :success
 
@@ -38,17 +38,45 @@ class ParcoursTest < ActionDispatch::IntegrationTest
     assert_select "h1", /Rond-point sans nom/
 
     assert_difference -> { Vote.count }, 1 do
-      post roundabout_votes_path(@roundabout, category: "plus_moche")
+      post roundabout_votes_path(@roundabout, liked: false)
     end
     assert_redirected_to @roundabout
-
-    assert_no_difference -> { Vote.count } do
-      post roundabout_votes_path(@roundabout, category: "plus_moche")
-    end
 
     get palmares_path(year: Date.current.year)
     assert_response :success
     assert_select ".classement td", text: "Rond-point sans nom"
+  end
+
+  test "un second avis du même visiteur révise le premier" do
+    post roundabout_votes_path(@roundabout, liked: false)
+
+    assert_no_difference -> { Vote.count } do
+      post roundabout_votes_path(@roundabout, liked: true)
+    end
+    assert @roundabout.votes.sole.liked?
+
+    get roundabout_path(@roundabout)
+    assert_select ".avis__exprime", count: 1
+  end
+
+  test "un avis dépourvu de sens est refusé" do
+    assert_no_difference -> { Vote.count } do
+      post roundabout_votes_path(@roundabout)
+    end
+    assert_redirected_to @roundabout
+  end
+
+  test "les deux classements de l'exercice reposent sur le sens de l'avis" do
+    autre = Roundabout.create!(lat: 44.9, lon: -0.6, diameter_m: 30.0, commune: "Mérignac")
+    Vote.create!(roundabout: @roundabout, liked: true, year: Date.current.year, voter_token: "jeton")
+    Vote.create!(roundabout: autre, liked: false, year: Date.current.year, voter_token: "jeton")
+
+    get palmares_path(year: Date.current.year)
+
+    assert_select ".palmares__categorie", count: 2
+    assert_select ".palmares__categorie:first-of-type .classement td", text: "Bordeaux"
+    assert_select ".palmares__categorie:first-of-type .classement td", text: "Mérignac", count: 0
+    assert_select ".palmares__categorie:last-of-type .classement td", text: "Mérignac"
   end
 
   test "une observation datée est versée au dossier" do
@@ -69,10 +97,10 @@ class ParcoursTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test "le palmarès d'un exercice sans suffrage l'énonce sans détour" do
+  test "le palmarès d'un exercice sans avis l'énonce sans détour" do
     get palmares_path(year: 2019)
 
     assert_response :success
-    assert_select ".etat-vide", /Aucun suffrage n'a été exprimé/
+    assert_select ".etat-vide", /Aucun avis de cette nature n'a été exprimé/
   end
 end

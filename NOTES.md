@@ -13,12 +13,13 @@ Aucune étape du brief n'a été bloquée. Ce qui suit est approximatif ou diff�
 - Aucune variante d'image : `image_processing` n'est pas installé, les fichiers sont servis à leur taille d'origine. À ajouter dès que des versements réels arrivent.
 - Aucune modération, aucune limitation de débit, aucun plafond de taille sur les versements.
 
-## Suffrages
+## Avis
 
-- Les trois catégories sont provisoires, l'éditorial reste à arbitrer.
-- Le jeton de session est trivial à réinitialiser : le suffrage n'a aucune valeur probante. Acceptable sans comptes utilisateurs, à revoir si le palmarès devient un enjeu.
-- Un suffrage ne peut pas être retiré une fois exprimé.
-- La base de développement contient 252 suffrages de démonstration, hors seed.
+- L'avis est binaire et unique par rond-point et par exercice. Le modèle ne porte aucune liste de catégories : les catégories thématiques seront inférées par croisement de données externes, pas soumises au vote.
+- Un avis est révisable jusqu'à la clôture de l'exercice — le sens s'inverse sur l'enregistrement existant. Il ne peut pas être retiré : rien ne permet de revenir à l'absence d'avis.
+- Le jeton de session est trivial à réinitialiser : l'avis n'a aucune valeur probante. Acceptable sans comptes utilisateurs, à revoir si le palmarès devient un enjeu.
+- Les deux classements sont indépendants : un ouvrage très fréquenté peut figurer dans les deux. Aucun score net n'est calculé, aucun seuil de participation n'est exigé.
+- La base de développement contient 155 avis de démonstration, hors seed.
 
 ## Divers
 

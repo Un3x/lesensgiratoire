@@ -43,7 +43,7 @@ class Roundabout < ApplicationRecord
       lon.abs, lon.negative? ? "O" : "E").tr(".", ",")
   end
 
-  def votes_count_for(category, year)
-    votes.where(category: category, year: year).count
+  def appreciations(year)
+    votes.for_year(year).group(:liked).count
   end
 end

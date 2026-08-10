@@ -202,9 +202,9 @@ a { color: var(--accent); }
 
 .fiche__mention { margin: 0.5rem 0 0; font-size: 0.78rem; color: var(--encre-attenuee); }
 
-.suffrages { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--filet); }
+.avis { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--filet); }
 
-.suffrage {
+.avis__ligne {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -214,11 +214,11 @@ a { color: var(--accent); }
   border-bottom: 1px solid var(--filet);
 }
 
-.suffrage__intitule { margin: 0; font-family: var(--serif); font-size: 1.05rem; }
+.avis__intitule { margin: 0; font-family: var(--serif); font-size: 1.05rem; }
 
-.suffrage__decompte { margin: 0.1rem 0 0; font-size: 0.85rem; color: var(--encre-attenuee); }
+.avis__decompte { margin: 0.1rem 0 0; font-variant-numeric: tabular-nums; color: var(--encre-attenuee); }
 
-.suffrage__acquis { font-size: 0.85rem; color: var(--encre-attenuee); }
+.avis__exprime { font-size: 0.85rem; color: var(--encre-attenuee); }
 
 .bouton {
   display: inline-block;

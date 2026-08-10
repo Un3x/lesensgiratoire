@@ -47,24 +47,38 @@
     </section>
   </div>
 
-  <section class="fiche__suffrages">
-    <h2>Suffrages — exercice <%= Date.current.year %></h2>
-    <ul class="suffrages">
-      <% Vote::CATEGORIES.each do |category| %>
-        <li class="suffrage">
-          <div>
-            <p class="suffrage__intitule"><%= t("categories.#{category}") %></p>
-            <p class="suffrage__decompte"><%= suffrages(@roundabout.votes_count_for(category, Date.current.year)) %></p>
-          </div>
-          <% if already_voted?(@roundabout, category) %>
-            <span class="suffrage__acquis">Suffrage exprimé</span>
-          <% else %>
-            <%= button_to t("category_actions.#{category}"), roundabout_votes_path(@roundabout, category: category), class: "bouton" %>
-          <% end %>
-        </li>
-      <% end %>
+  <section class="fiche__avis">
+    <h2>Appréciation — exercice <%= Date.current.year %></h2>
+
+    <% appreciations = @roundabout.appreciations(Date.current.year) %>
+    <% avis = avis_du_visiteur(@roundabout) %>
+
+    <ul class="avis">
+      <li class="avis__ligne">
+        <div>
+          <p class="avis__intitule">Avis favorables</p>
+          <p class="avis__decompte"><%= appreciations.fetch(true, 0) %></p>
+        </div>
+        <% if avis&.liked? %>
+          <span class="avis__exprime">Votre avis</span>
+        <% else %>
+          <%= button_to "J'apprécie ce rond-point", roundabout_votes_path(@roundabout, liked: true), class: "bouton" %>
+        <% end %>
+      </li>
+      <li class="avis__ligne">
+        <div>
+          <p class="avis__intitule">Avis défavorables</p>
+          <p class="avis__decompte"><%= appreciations.fetch(false, 0) %></p>
+        </div>
+        <% if avis && !avis.liked? %>
+          <span class="avis__exprime">Votre avis</span>
+        <% else %>
+          <%= button_to "Je n'apprécie pas ce rond-point", roundabout_votes_path(@roundabout, liked: false), class: "bouton" %>
+        <% end %>
+      </li>
     </ul>
-    <p class="fiche__mention">Un suffrage par catégorie et par année. Le suffrage est rattaché au navigateur consultant, sans inscription préalable.</p>
+
+    <p class="fiche__mention">Un avis par rond-point et par exercice. L'avis est rattaché au navigateur consultant, sans inscription préalable, et reste révisable jusqu'à la clôture de l'exercice.</p>
   </section>
 
   <section class="fiche__observations">

@@ -57,7 +57,8 @@ Les photos importées de sources tierces portent leurs propres licences : prévo
 
 - **Rond-point** — position, diamètre, commune (code INSEE), nom vernaculaire
 - **Photos** — une **timeline d'observations datées**, pas une photo unique. Un rond-point change au fil des saisons.
-- **Votes** — par catégorie (le plus beau, le plus moche, le moins bien entretenu, …), **scopés par année**. D'où un palmarès annuel : « Le plus moche rond-point de France 2026 ».
+- **Avis** — un avis binaire, favorable ou défavorable, **un seul par rond-point et par visiteur**, rattaché au navigateur sans inscription et **scopé par année**. D'où deux palmarès annuels : les ronds-points les plus et les moins appréciés de l'exercice.
+- Les catégories thématiques (le plus dangereux, le plus fleuri, …) seront **inférées** plus tard par croisement de données externes, jamais soumises au vote. Ne figer aucune liste de catégories dans le modèle.
 - **Carte d'accueil** — toute la France. Filtre d'affichage par défaut à **20 m de diamètre**, qui écarte les raquettes de retournement. Seuil d'affichage, jamais d'import.
 
 ## Import OSM — pièges mesurés
