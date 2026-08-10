@@ -1,0 +1,135 @@
+<% content_for :title, "#{@roundabout.designation} — Le Sens Giratoire" %>
+
+<article class="fiche">
+  <header class="fiche__entete">
+    <p class="fiche__surtitre">Recensement des ronds-points de France — fiche n° <%= @roundabout.id %></p>
+    <h1><%= @roundabout.designation %><% if @roundabout.commune.present? %><span class="fiche__commune">Commune de <%= @roundabout.commune %></span><% end %></h1>
+  </header>
+
+  <div class="fiche__colonnes">
+    <section class="fiche__signaletique">
+      <h2>Fiche signalétique</h2>
+      <dl>
+        <dt>Dénomination</dt>
+        <dd><%= @roundabout.name.presence || "Non dénommé" %></dd>
+
+        <dt>Commune</dt>
+        <dd><%= @roundabout.commune.presence || "Non renseignée" %></dd>
+
+        <dt>Code INSEE</dt>
+        <dd><%= @roundabout.insee_code.presence || "Non renseigné" %></dd>
+
+        <dt>Département</dt>
+        <dd><%= @roundabout.departement.presence || "Non renseigné" %></dd>
+
+        <dt>Région</dt>
+        <dd><%= @roundabout.region.presence || "Non renseignée" %></dd>
+
+        <dt>Diamètre</dt>
+        <dd><%= @roundabout.diameter_m ? "#{number_with_precision(@roundabout.diameter_m, precision: 1)} mètres" : "Non mesuré" %></dd>
+
+        <dt>Coordonnées</dt>
+        <dd><%= @roundabout.coordinates %></dd>
+
+        <dt>Références OpenStreetMap</dt>
+        <dd><%= @roundabout.osm_way_ids.any? ? @roundabout.osm_way_ids.join(", ") : "Aucune" %><br>
+          <span class="fiche__mention">Références indicatives. L'identité de l'ouvrage est sa position.</span></dd>
+      </dl>
+    </section>
+
+    <section class="fiche__carte">
+      <h2>Localisation</h2>
+      <div class="fiche__mini-carte"
+        data-controller="mini-carte"
+        data-mini-carte-lat-value="<%= @roundabout.lat %>"
+        data-mini-carte-lon-value="<%= @roundabout.lon %>"
+        data-mini-carte-zoom-value="17"></div>
+    </section>
+  </div>
+
+  <section class="fiche__suffrages">
+    <h2>Suffrages — exercice <%= Date.current.year %></h2>
+    <ul class="suffrages">
+      <% Vote::CATEGORIES.each do |category| %>
+        <li class="suffrage">
+          <div>
+            <p class="suffrage__intitule"><%= t("categories.#{category}") %></p>
+            <p class="suffrage__decompte"><%= suffrages(@roundabout.votes_count_for(category, Date.current.year)) %></p>
+          </div>
+          <% if already_voted?(@roundabout, category) %>
+            <span class="suffrage__acquis">Suffrage exprimé</span>
+          <% else %>
+            <%= button_to t("category_actions.#{category}"), roundabout_votes_path(@roundabout, category: category), class: "bouton" %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+    <p class="fiche__mention">Un suffrage par catégorie et par année. Le suffrage est rattaché au navigateur consultant, sans inscription préalable.</p>
+  </section>
+
+  <section class="fiche__observations">
+    <h2>Observations photographiques</h2>
+
+    <% if @roundabout.photos.any? %>
+      <ol class="timeline">
+        <% @roundabout.photos.each do |photo| %>
+          <li class="observation">
+            <p class="observation__date"><%= l(photo.taken_on, format: :long) %></p>
+            <%= image_tag photo.image, alt: "Observation du #{l(photo.taken_on)} — #{@roundabout.designation}", class: "observation__image" %>
+            <p class="observation__mentions">
+              <%= photo.author.present? ? "Auteur : #{photo.author}." : "Auteur non renseigné." %>
+              <%= "Licence : #{photo.licence}." if photo.licence.present? %>
+              <%= link_to "Source", photo.source_url, rel: "nofollow noopener" if photo.source_url.present? %>
+            </p>
+          </li>
+        <% end %>
+      </ol>
+    <% else %>
+      <p class="etat-vide">Aucune observation photographique n'a été versée au dossier de ce rond-point.</p>
+    <% end %>
+
+    <div class="versement">
+      <h3>Verser une observation</h3>
+      <%= form_with model: [ @roundabout, @photo ], class: "formulaire" do |form| %>
+        <% if @photo.errors.any? %>
+          <div class="formulaire__erreurs" role="alert">
+            <p>Le versement a été refusé pour le motif suivant :</p>
+            <ul>
+              <% @photo.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="champ">
+          <%= form.label :image, "Photographie" %>
+          <%= form.file_field :image, accept: "image/*", required: true %>
+        </div>
+
+        <div class="champ">
+          <%= form.label :taken_on, "Date de prise de vue" %>
+          <%= form.date_field :taken_on, required: true, max: Date.current %>
+        </div>
+
+        <div class="champ">
+          <%= form.label :author, "Auteur (facultatif)" %>
+          <%= form.text_field :author %>
+        </div>
+
+        <div class="champ">
+          <%= form.label :licence, "Licence (facultatif)" %>
+          <%= form.text_field :licence %>
+        </div>
+
+        <div class="champ">
+          <%= form.label :source_url, "Adresse de la source (facultatif)" %>
+          <%= form.url_field :source_url %>
+        </div>
+
+        <%= form.submit "Verser au dossier", class: "bouton" %>
+      <% end %>
+      <p class="fiche__mention">Une observation est datée. Un rond-point se transforme au fil des saisons, la date de prise de vue est donc requise.</p>
+    </div>
+  </section>
+</article>

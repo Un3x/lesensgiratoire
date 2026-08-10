@@ -11,9 +11,7 @@ class RoundaboutsController < ApplicationController
 
   def show
     @roundabout = Roundabout.find(params[:id])
-    @photo = @roundabout.photos.new(taken_on: Date.current)
-    @votes_count = @roundabout.votes.for_year(Date.current.year).group(:category).count
-    @cast_votes = @roundabout.votes.for_year(Date.current.year).where(voter_token: voter_token).pluck(:category)
+    @photo = Photo.new(roundabout: @roundabout, taken_on: Date.current)
   end
 
   private

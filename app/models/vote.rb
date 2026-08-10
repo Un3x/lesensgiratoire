@@ -5,6 +5,7 @@ class Vote < ApplicationRecord
 
   enum :category, CATEGORIES.index_by(&:to_sym)
 
+  validates :category, presence: true
   validates :year, presence: true, numericality: { only_integer: true, in: 2026..2100 }
   validates :voter_token, presence: true
   validates :roundabout_id, uniqueness: { scope: [ :category, :year, :voter_token ],

@@ -37,6 +37,12 @@ class Roundabout < ApplicationRecord
     name.presence || "Rond-point sans nom"
   end
 
+  def coordinates
+    format("%.6f %s, %.6f %s",
+      lat.abs, lat.negative? ? "S" : "N",
+      lon.abs, lon.negative? ? "O" : "E").tr(".", ",")
+  end
+
   def votes_count_for(category, year)
     votes.where(category: category, year: year).count
   end

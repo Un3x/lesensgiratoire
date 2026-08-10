@@ -127,3 +127,190 @@ a { color: var(--accent); }
 .carte__infobulle p { margin: 0 0 0.2rem; }
 
 .leaflet-container { font-family: var(--sans); background: var(--papier-fonce); }
+
+/* Documents */
+
+.fiche, .palmares {
+  width: min(64rem, 100%);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+.fiche__surtitre, .palmares__surtitre {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--encre-attenuee);
+}
+
+.fiche__entete, .palmares__entete {
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--encre);
+}
+
+.fiche h1, .palmares h1 {
+  margin: 0.3rem 0 0;
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.fiche__commune {
+  display: block;
+  font-family: var(--sans);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--encre-attenuee);
+}
+
+.fiche h2, .palmares h2 {
+  margin: 0 0 0.8rem;
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.fiche h3 { margin: 0 0 0.8rem; font-family: var(--serif); font-size: 1.05rem; font-weight: 600; }
+
+.fiche section { margin-top: 2rem; }
+
+.fiche__colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+
+.fiche__colonnes > section { margin-top: 2rem; }
+
+.fiche__signaletique dl { margin: 0; display: grid; grid-template-columns: 12rem 1fr; }
+
+.fiche__signaletique dt {
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--filet);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--encre-attenuee);
+}
+
+.fiche__signaletique dd {
+  margin: 0;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--filet);
+  font-variant-numeric: tabular-nums;
+}
+
+.fiche__mini-carte { height: 22rem; border: 1px solid var(--filet); }
+
+.fiche__mention { margin: 0.5rem 0 0; font-size: 0.78rem; color: var(--encre-attenuee); }
+
+.suffrages { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--filet); }
+
+.suffrage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--filet);
+}
+
+.suffrage__intitule { margin: 0; font-family: var(--serif); font-size: 1.05rem; }
+
+.suffrage__decompte { margin: 0.1rem 0 0; font-size: 0.85rem; color: var(--encre-attenuee); }
+
+.suffrage__acquis { font-size: 0.85rem; color: var(--encre-attenuee); }
+
+.bouton {
+  display: inline-block;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.bouton:hover { background: var(--accent); color: var(--papier); }
+
+.timeline { list-style: none; margin: 0 0 2rem; padding: 0; display: grid; gap: 1.5rem; }
+
+.observation { border-left: 2px solid var(--filet); padding-left: 1rem; }
+
+.observation__date {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--encre-attenuee);
+}
+
+.observation__image { max-width: min(36rem, 100%); height: auto; border: 1px solid var(--filet); }
+
+.observation__mentions { margin: 0.35rem 0 0; font-size: 0.82rem; color: var(--encre-attenuee); }
+
+.etat-vide {
+  padding: 1rem;
+  background: var(--papier-fonce);
+  border: 1px solid var(--filet);
+  color: var(--encre-attenuee);
+}
+
+.versement { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--filet); }
+
+.formulaire { display: grid; gap: 0.9rem; max-width: 32rem; }
+
+.champ { display: grid; gap: 0.25rem; }
+
+.champ label { font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--encre-attenuee); }
+
+.champ input {
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--filet);
+  background: #fff;
+  font: inherit;
+}
+
+.formulaire input[type="submit"] { justify-self: start; }
+
+.formulaire__erreurs {
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid #8a2f2f;
+  background: var(--papier-fonce);
+  font-size: 0.9rem;
+}
+
+.formulaire__erreurs p { margin: 0 0 0.3rem; }
+
+.formulaire__erreurs ul { margin: 0; padding-left: 1.1rem; }
+
+/* Palmarès */
+
+.palmares__exercices { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0 0; font-size: 0.9rem; }
+
+.palmares__categorie { margin-top: 2.5rem; }
+
+.classement { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+
+.classement caption { text-align: left; padding-bottom: 0.5rem; color: var(--encre-attenuee); font-size: 0.82rem; }
+
+.classement th, .classement td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--filet); text-align: left; }
+
+.classement thead th {
+  border-bottom: 1px solid var(--encre);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--encre-attenuee);
+  font-weight: 500;
+}
+
+.classement td:first-child, .classement th:first-child { width: 3rem; font-variant-numeric: tabular-nums; }
+
+.classement td:last-child, .classement th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 48rem) {
+  .fiche__colonnes { grid-template-columns: 1fr; }
+  .fiche__signaletique dl { grid-template-columns: 1fr; }
+  .fiche__signaletique dd { padding-top: 0; border-top: 0; }
+}
