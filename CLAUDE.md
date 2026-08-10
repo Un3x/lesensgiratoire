@@ -24,13 +24,19 @@ En cas de doute sur un libellé drôle : proposer, ne pas trancher. L'éditorial
 
 ## État
 
-**L'application n'est pas encore initialisée.** Le dépôt est vide. La section « Commandes » ci-dessous est à compléter après le `rails new`.
+V1 fonctionnelle en local : carte, fiche, versement de photos, suffrages, palmarès. Pas de déploiement. Points ouverts dans `NOTES.md`.
 
 ## Commandes
 
 ```bash
-# à compléter après initialisation
+bin/setup            # dépendances, création et préparation des bases
+bin/dev              # serveur de développement (http://localhost:3000)
+bin/rails db:seed    # charge db/seeds/*.json, idempotent (appariement par position)
+bin/rails test       # modèles et parcours d'intégration
+bin/rubocop          # rails-omakase
 ```
+
+Pour un nouveau jeu de données, déposer le fichier dans `db/seeds/` au format du recensement girondin et relancer `bin/rails db:seed`.
 
 ## Contraintes dures (non négociables)
 
