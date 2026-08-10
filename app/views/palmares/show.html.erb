@@ -1,0 +1,55 @@
+<% content_for :title, "Palmarès #{@year} — Le Sens Giratoire" %>
+
+<section class="palmares">
+  <header class="palmares__entete">
+    <p class="palmares__surtitre">Recensement des ronds-points de France</p>
+    <h1>Palmarès de l'exercice <%= @year %></h1>
+  </header>
+
+  <p class="palmares__exercices">
+    <% @years.each do |year| %>
+      <% if year == @year %>
+        <span aria-current="page">Exercice <%= year %></span>
+      <% else %>
+        <%= link_to "Exercice #{year}", palmares_path(year: year) %>
+      <% end %>
+    <% end %>
+  </p>
+
+  <% @rankings.each do |category, classement| %>
+    <section class="palmares__categorie">
+      <h2><%= t("categories.#{category}") %> <%= @year %></h2>
+
+      <% if classement.any? %>
+        <table class="classement">
+          <caption>Classement établi au vu des suffrages exprimés, arrêté aux vingt premiers.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Rang</th>
+              <th scope="col">Ouvrage</th>
+              <th scope="col">Commune</th>
+              <th scope="col">Département</th>
+              <th scope="col">Suffrages</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% precedent = rang = nil %>
+            <% classement.each_with_index do |roundabout, index| %>
+              <% rang = index + 1 unless roundabout.suffrages == precedent %>
+              <% precedent = roundabout.suffrages %>
+              <tr>
+                <td><%= rang %></td>
+                <td><%= link_to roundabout.designation, roundabout %></td>
+                <td><%= roundabout.commune.presence || "Non renseignée" %></td>
+                <td><%= roundabout.departement.presence || "Non renseigné" %></td>
+                <td><%= roundabout.suffrages %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="etat-vide">Aucun suffrage n'a été exprimé dans cette catégorie au titre de l'exercice <%= @year %>.</p>
+      <% end %>
+    </section>
+  <% end %>
+</section>
