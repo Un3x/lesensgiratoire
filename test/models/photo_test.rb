@@ -1,6 +1,13 @@
 require "test_helper"
 
 class PhotoTest < ActiveSupport::TestCase
+  PANORAMAX = {
+    image_url: "https://api.panoramax.xyz/images/abc/sd.jpg",
+    author: "Service départemental",
+    licence: "etalab-2.0",
+    source_url: "https://panoramax.ign.fr/#pic=abc"
+  }.freeze
+
   setup do
     @roundabout = Roundabout.create!(lat: 44.837789, lon: -0.579180, diameter_m: 42.0)
     @image = fixture_file_upload("observation.png", "image/png")
@@ -13,11 +20,35 @@ class PhotoTest < ActiveSupport::TestCase
     assert_includes photo.errors.attribute_names, :taken_on
   end
 
-  test "une observation sans photographie est irrecevable" do
+  test "une observation sans photographie ni adresse distante est irrecevable" do
     photo = Photo.new(roundabout: @roundabout, taken_on: Date.current)
 
     assert_not photo.valid?
     assert_includes photo.errors.attribute_names, :image
+  end
+
+  test "une adresse distante tient lieu de photographie jointe" do
+    photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, **PANORAMAX)
+
+    assert photo.valid?
+    assert photo.distante?
+    assert_equal PANORAMAX[:image_url], photo.illustration
+  end
+
+  test "une observation distante exige auteur, licence et source" do
+    %i[author licence source_url].each do |mention|
+      photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, **PANORAMAX.merge(mention => nil))
+
+      assert_not photo.valid?, "#{mention} devrait être exigé"
+      assert_includes photo.errors.attribute_names, mention
+    end
+  end
+
+  test "une observation jointe n'exige pas les mentions d'attribution" do
+    photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, image: @image)
+
+    assert photo.valid?
+    assert_not photo.distante?
   end
 
   test "une observation postérieure au jour de versement est irrecevable" do

@@ -26,8 +26,14 @@ Mesuré dans Chromium et Firefox sur les 60 046 ouvrages, sans avertissement con
 
 ## Photographies
 
-- Aucune variante d'image : `image_processing` n'est pas installé, les fichiers sont servis à leur taille d'origine. À ajouter dès que des versements réels arrivent.
+- Une observation porte soit un fichier joint, soit une adresse distante (`image_url`), jamais rien. Les clichés Panoramax ne sont pas téléchargés : le dépôt ne les héberge pas et le service public n'est pas ré-hébergé.
+- L'attribution — auteur, licence, lien vers la source — est exigée par validation dès qu'une observation est distante, et rendue sous chaque cliché. Les licences sont mélangées, `etalab-2.0` et `CC-BY-SA-4.0` : elles ne sont jamais globalisées en pied de page.
+- **L'asset `sd` de Panoramax est une panoramique équirectangulaire** (2048 × 1024, rapport exactement 2:1). Rendu tel quel dans la timeline, il paraît déformé. L'asset `thumb` est un cadrage plat (500 × 300, 29 Ko) et se présente bien mieux. Le chargeur retient `url`, donc le `sd` : à arbitrer.
+- Le JSONL porte aussi `thumb`, `i`, `ecart_deg` et `distance_m` : rien n'est conservé. `ecart_deg` donnerait de quoi recadrer une vue rectilinéaire dans la panoramique, si l'on va par là.
+- Aucune variante d'image : `image_processing` n'est pas installé, les fichiers joints sont servis à leur taille d'origine.
 - Aucune modération, aucune limitation de débit, aucun plafond de taille sur les versements.
+- Le formulaire de versement n'expose pas `image_url` et le contrôleur ne l'accepte pas : une adresse distante n'entre que par `bin/rails panoramax:import`. Un visiteur ne peut pas faire pointer une observation vers une image arbitraire.
+- La base de développement contient une observation Panoramax réelle sur la fiche n° 13, versée pour vérifier le rendu.
 
 ## Avis
 

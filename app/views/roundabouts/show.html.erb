@@ -89,11 +89,16 @@
         <% @roundabout.photos.each do |photo| %>
           <li class="observation">
             <p class="observation__date"><%= l(photo.taken_on, format: :long) %></p>
-            <%= image_tag photo.image, alt: "Observation du #{l(photo.taken_on)} — #{@roundabout.designation}", class: "observation__image" %>
+            <%= image_tag photo.illustration, alt: "Observation du #{l(photo.taken_on)} — #{@roundabout.designation}", class: "observation__image", loading: "lazy" %>
             <p class="observation__mentions">
-              <%= photo.author.present? ? "Auteur : #{photo.author}." : "Auteur non renseigné." %>
-              <%= "Licence : #{photo.licence}." if photo.licence.present? %>
-              <%= link_to "Source", photo.source_url, rel: "nofollow noopener" if photo.source_url.present? %>
+              <% if photo.distante? %>
+                Cliché : <%= photo.author %>. Licence : <%= photo.licence %>.
+                <%= link_to "Prise de vue d'origine", photo.source_url, rel: "noopener" %>
+              <% else %>
+                <%= photo.author.present? ? "Cliché : #{photo.author}." : "Auteur non renseigné." %>
+                <%= "Licence : #{photo.licence}." if photo.licence.present? %>
+                <%= link_to "Source", photo.source_url, rel: "nofollow noopener" if photo.source_url.present? %>
+              <% end %>
             </p>
           </li>
         <% end %>
