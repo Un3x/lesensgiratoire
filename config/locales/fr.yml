@@ -16,6 +16,11 @@ fr:
     messages:
       blank: doit être renseigné
       taken: est déjà utilisé
+      invalid: n'est pas valide
+      not_a_number: n'est pas un nombre
+      not_an_integer: doit être un nombre entier
+      inclusion: n'est pas une valeur retenue
+      record_invalid: "La validation a échoué : %{errors}"
   activerecord:
     attributes:
       photo:
