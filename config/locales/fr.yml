@@ -1,0 +1,40 @@
+fr:
+  date:
+    formats:
+      default: "%d/%m/%Y"
+      long: "%e %B %Y"
+    month_names: [~, janvier, février, mars, avril, mai, juin, juillet, août, septembre, octobre, novembre, décembre]
+    abbr_month_names: [~, janv., févr., mars, avr., mai, juin, juil., août, sept., oct., nov., déc.]
+    day_names: [dimanche, lundi, mardi, mercredi, jeudi, vendredi, samedi]
+    abbr_day_names: [dim, lun, mar, mer, jeu, ven, sam]
+  number:
+    format:
+      separator: ","
+      delimiter: " "
+  errors:
+    format: "%{attribute} : %{message}"
+    messages:
+      blank: doit être renseigné
+      taken: est déjà utilisé
+  activerecord:
+    attributes:
+      photo:
+        taken_on: Date de prise de vue
+        image: Photographie
+        author: Auteur
+        licence: Licence
+        source_url: Adresse de la source
+    errors:
+      models:
+        photo:
+          attributes:
+            image:
+              blank: doit être jointe
+  categories:
+    plus_beau: Le plus beau rond-point
+    plus_moche: Le plus moche rond-point
+    moins_entretenu: Le rond-point le moins bien entretenu
+  category_actions:
+    plus_beau: Désigner comme le plus beau
+    plus_moche: Désigner comme le plus moche
+    moins_entretenu: Désigner comme le moins bien entretenu
