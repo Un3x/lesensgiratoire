@@ -7,7 +7,7 @@ namespace :panoramax do
     releve = Photo.ingest_panoramax(args[:fichier])
 
     puts "#{releve[:versees]} observations versées, #{releve[:deja_versees]} déjà présentes."
-    puts "#{releve[:hors_cadrage]} écartées pour cadrage au-delà de #{Photo::CADRAGE_MAX_DEG} degrés, dont #{releve[:retirees]} retirées du dossier." if releve[:hors_cadrage].positive?
+    puts "#{releve[:hors_cadrage]} écartées, l'axe de visée ne tombant pas sur l'ouvrage, dont #{releve[:retirees]} retirées du dossier." if releve[:hors_cadrage].positive?
     puts "#{releve[:sans_ouvrage]} lignes sans rond-point recensé à cette position." if releve[:sans_ouvrage].positive?
 
     if releve[:refusees].any?

@@ -18,7 +18,7 @@ class PanoramaxIngestTest < ActiveSupport::TestCase
       url: "https://api.panoramax.xyz/images/abc/sd.jpg",
       thumb: "https://api.panoramax.xyz/images/abc/thumb.jpg",
       date: "2025-06-12", licence: "etalab-2.0", auteur: "Service départemental",
-      source: "https://panoramax.ign.fr/#pic=abc", ecart_deg: 12.4, distance_m: 18.2
+      source: "https://panoramax.ign.fr/#pic=abc", ecart_deg: 12, distance_m: 18, rapport: 1.89
     }.merge(surcharges)
   end
 
@@ -88,8 +88,8 @@ class PanoramaxIngestTest < ActiveSupport::TestCase
     assert_equal 0, Photo.count
   end
 
-  test "une observation cadrée au-delà du seuil est écartée" do
-    ecrire(observation(ecart_deg: Photo::CADRAGE_MAX_DEG + 1))
+  test "une observation dont l'axe de visée manque l'ouvrage est écartée" do
+    ecrire(observation(ecart_deg: 46, rapport: 1.96))
 
     releve = Photo.ingest_panoramax(@fichier)
 
@@ -98,16 +98,43 @@ class PanoramaxIngestTest < ActiveSupport::TestCase
     assert_equal 0, Photo.count
   end
 
-  test "une observation cadrée au seuil exact est retenue" do
-    ecrire(observation(ecart_deg: Photo::CADRAGE_MAX_DEG))
+  test "un cliché pris au ras de l'anneau est retenu malgré un écart important" do
+    ecrire(observation(ecart_deg: 38, rapport: 1.30))
 
     assert_equal 1, Photo.ingest_panoramax(@fichier)[:versees]
+  end
+
+  test "un cliché lointain est écarté pour un écart que la proximité aurait absous" do
+    ecrire(observation(ecart_deg: 30, rapport: 4.0))
+
+    assert_equal 1, Photo.ingest_panoramax(@fichier)[:hors_cadrage]
+  end
+
+  test "un objectif situé à l'intérieur de l'anneau est toujours retenu" do
+    ecrire(observation(ecart_deg: 60, rapport: 0.9))
+
+    assert_equal 1, Photo.ingest_panoramax(@fichier)[:versees]
+  end
+
+  test "l'axe tangent au bord de l'ouvrage est retenu" do
+    ecrire(observation(ecart_deg: 30, rapport: 2.0))
+
+    assert_equal 1, Photo.ingest_panoramax(@fichier)[:versees]
+  end
+
+  test "sans mesure de proximité, la demi-ouverture par défaut fait foi" do
+    ecrire(observation(ecart_deg: 36, rapport: nil), observation(url: "https://x/b.jpg", ecart_deg: 35, rapport: nil))
+
+    releve = Photo.ingest_panoramax(@fichier)
+
+    assert_equal 1, releve[:hors_cadrage]
+    assert_equal 1, releve[:versees]
   end
 
   test "une observation déjà versée est retirée si son cadrage devient irrecevable" do
     ecrire(observation)
     Photo.ingest_panoramax(@fichier)
-    ecrire(observation(ecart_deg: 50))
+    ecrire(observation(ecart_deg: 50, rapport: 2.0))
 
     releve = Photo.ingest_panoramax(@fichier)
 
@@ -118,7 +145,7 @@ class PanoramaxIngestTest < ActiveSupport::TestCase
   test "le retrait ne touche pas les observations versées à la main" do
     jointe = Photo.create!(roundabout: @roundabout, taken_on: Date.current,
       image: fixture_file_upload("observation.png", "image/png"))
-    ecrire(observation(ecart_deg: 50))
+    ecrire(observation(ecart_deg: 50, rapport: 2.0))
 
     Photo.ingest_panoramax(@fichier)
 

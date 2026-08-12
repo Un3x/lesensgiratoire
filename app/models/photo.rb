@@ -1,7 +1,8 @@
 require "zlib"
 
 class Photo < ApplicationRecord
-  CADRAGE_MAX_DEG = 35
+  CADRAGE_TOLERANCE_DEG = 0
+  DEMI_OUVERTURE_DEFAUT_DEG = 35
 
   belongs_to :roundabout
 
@@ -60,8 +61,16 @@ class Photo < ApplicationRecord
 
   def self.hors_cadrage?(observation)
     ecart = observation["ecart_deg"]
+    return false if ecart.blank?
 
-    ecart.present? && ecart > CADRAGE_MAX_DEG
+    ecart > demi_largeur_apparente(observation["rapport"]) + CADRAGE_TOLERANCE_DEG
+  end
+
+  def self.demi_largeur_apparente(rapport)
+    return DEMI_OUVERTURE_DEFAUT_DEG if rapport.blank?
+    return 90.0 if rapport <= 1
+
+    Math.asin(1.0 / rapport) * 180 / Math::PI
   end
 
   def distante?
