@@ -88,6 +88,51 @@ class PanoramaxIngestTest < ActiveSupport::TestCase
     assert_equal 0, Photo.count
   end
 
+  test "une observation cadrée au-delà du seuil est écartée" do
+    ecrire(observation(ecart_deg: Photo::CADRAGE_MAX_DEG + 1))
+
+    releve = Photo.ingest_panoramax(@fichier)
+
+    assert_equal 0, releve[:versees]
+    assert_equal 1, releve[:hors_cadrage]
+    assert_equal 0, Photo.count
+  end
+
+  test "une observation cadrée au seuil exact est retenue" do
+    ecrire(observation(ecart_deg: Photo::CADRAGE_MAX_DEG))
+
+    assert_equal 1, Photo.ingest_panoramax(@fichier)[:versees]
+  end
+
+  test "une observation déjà versée est retirée si son cadrage devient irrecevable" do
+    ecrire(observation)
+    Photo.ingest_panoramax(@fichier)
+    ecrire(observation(ecart_deg: 50))
+
+    releve = Photo.ingest_panoramax(@fichier)
+
+    assert_equal 1, releve[:retirees]
+    assert_equal 0, Photo.count
+  end
+
+  test "le retrait ne touche pas les observations versées à la main" do
+    jointe = Photo.create!(roundabout: @roundabout, taken_on: Date.current,
+      image: fixture_file_upload("observation.png", "image/png"))
+    ecrire(observation(ecart_deg: 50))
+
+    Photo.ingest_panoramax(@fichier)
+
+    assert_equal [ jointe ], @roundabout.photos.to_a
+  end
+
+  test "une observation sans mesure de cadrage est retenue" do
+    ligne = observation
+    ligne.delete(:ecart_deg)
+    ecrire(ligne)
+
+    assert_equal 1, Photo.ingest_panoramax(@fichier)[:versees]
+  end
+
   test "les lignes vides sont ignorées" do
     @fichier.write("\n#{observation.to_json}\n\n")
 

@@ -35,7 +35,7 @@ bin/rails db:seed    # charge db/seeds/*.json, idempotent (appariement par posit
 bin/rails test       # modèles et parcours d'intégration
 bin/rubocop          # rails-omakase
 
-bin/rails "panoramax:import[db/seeds/photos_panoramax.jsonl]"   # observations Panoramax, idempotent
+bin/rails "panoramax:import[db/seeds/photos_panoramax.jsonl.gz]"   # observations Panoramax, idempotent
 ```
 
 Le recensement national (60 047 ronds-points) est versé en `db/seeds/roundabouts_france.json.gz` — gzip parce que le dépôt est public et que tout le monde paie ce poids au clonage. Le chargeur lit `.json` et `.json.gz`. Pour un nouveau jeu, déposer le fichier dans `db/seeds/` au même format et relancer `bin/rails db:seed` : l'appariement par position préserve photos et avis. Compter dix minutes à cette volumétrie.
