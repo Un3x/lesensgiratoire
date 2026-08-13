@@ -11,7 +11,8 @@ namespace :panoramax do
     releve = Photo.moissonner_panoramax(ouvrages)
 
     puts "#{releve[:versees]} observations versées, #{releve[:deja_versees]} déjà présentes."
-    puts "#{releve[:hors_cadrage]} écartées pour cadrage, dont #{releve[:retirees]} retirées." if releve[:hors_cadrage].positive?
+    puts "#{releve[:retirees]} observations évincées du dossier." if releve[:retirees].positive?
+    puts "#{releve[:hors_cadrage]} clichés écartés pour cadrage." if releve[:hors_cadrage].positive?
     puts "#{releve[:injoignables]} ouvrages sans réponse de Panoramax." if releve[:injoignables].positive?
     puts "#{releve[:refusees].size} refusées." if releve[:refusees].any?
   end
