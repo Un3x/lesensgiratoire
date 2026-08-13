@@ -35,6 +35,21 @@ class RoundaboutTest < ActiveSupport::TestCase
     assert_equal "Rond-point sans nom", @roundabout.designation
   end
 
+  test "l'échelle de la vue zénithale suit le diamètre de l'ouvrage" do
+    petit = Roundabout.create!(lat: 44.8, lon: -0.5, diameter_m: 18.0)
+    grand = Roundabout.create!(lat: 44.8, lon: -0.4, diameter_m: 130.0)
+
+    assert_operator petit.display_zoom, :>, grand.display_zoom
+    assert_includes 15..20, petit.display_zoom
+    assert_includes 15..20, grand.display_zoom
+  end
+
+  test "un ouvrage non mesuré reste cadrable" do
+    sans_mesure = Roundabout.create!(lat: 44.8, lon: -0.3)
+
+    assert_includes 15..20, sans_mesure.display_zoom
+  end
+
   test "les coordonnées portent leur orientation" do
     assert_equal "44,837789 N, 0,579180 O", @roundabout.coordinates
   end

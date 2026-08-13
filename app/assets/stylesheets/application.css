@@ -200,6 +200,10 @@ a { color: var(--accent); }
 
 .fiche__mini-carte { height: 22rem; border: 1px solid var(--filet); }
 
+.fiche__mini-carte--reduite { height: 13rem; }
+
+.fiche__second-titre { margin-top: 1.6rem; }
+
 .fiche__mention { margin: 0.5rem 0 0; font-size: 0.78rem; color: var(--encre-attenuee); }
 
 .avis { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--filet); }

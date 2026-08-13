@@ -38,12 +38,26 @@
     </section>
 
     <section class="fiche__carte">
-      <h2>Localisation</h2>
+      <h2>Vue zénithale</h2>
       <div class="fiche__mini-carte"
         data-controller="mini-carte"
         data-mini-carte-lat-value="<%= @roundabout.lat %>"
         data-mini-carte-lon-value="<%= @roundabout.lon %>"
-        data-mini-carte-zoom-value="17"></div>
+        data-mini-carte-zoom-value="<%= @roundabout.display_zoom %>"
+        data-mini-carte-tuiles-value="<%= tuiles_orthophoto %>"
+        data-mini-carte-attribution-value="© IGN, Géoplateforme — Licence ouverte"
+        data-mini-carte-marqueur-value="false"></div>
+      <p class="fiche__mention">Prise de vue aérienne de l'Institut national de l'information géographique et forestière, sous Licence ouverte.</p>
+
+      <h2 class="fiche__second-titre">Localisation</h2>
+      <div class="fiche__mini-carte fiche__mini-carte--reduite"
+        data-controller="mini-carte"
+        data-mini-carte-lat-value="<%= @roundabout.lat %>"
+        data-mini-carte-lon-value="<%= @roundabout.lon %>"
+        data-mini-carte-zoom-value="16"
+        data-mini-carte-tuiles-value="<%= tuiles_plan %>"
+        data-mini-carte-attribution-value="© les contributeurs OpenStreetMap"
+        data-mini-carte-marqueur-value="true"></div>
     </section>
   </div>
 

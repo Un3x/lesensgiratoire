@@ -43,6 +43,11 @@ class Roundabout < ApplicationRecord
       lon.abs, lon.negative? ? "O" : "E").tr(".", ",")
   end
 
+  def display_zoom(pixels = 420, marge = 2.2)
+    etendue = (diameter_m || DEFAULT_MIN_DIAMETER_M).to_f * marge
+    Math.log2(156_543.03 * Math.cos(lat.to_f * Math::PI / 180) * pixels / etendue).floor.clamp(15, 20)
+  end
+
   def appreciations(year)
     votes.for_year(year).group(:liked).count
   end
