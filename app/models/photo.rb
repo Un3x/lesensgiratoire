@@ -22,6 +22,9 @@ class Photo < ApplicationRecord
     validates :author, presence: true
     validates :licence, presence: true
     validates :source_url, presence: true
+    validates :taken_on, uniqueness: { scope: :roundabout_id,
+      conditions: -> { where.not(image_url: nil) },
+      message: "a déjà fait l'objet d'une observation distante pour cet ouvrage" }
   end
 
   normalizes :author, :licence, :source_url, :image_url, with: -> { it&.strip.presence }
@@ -48,10 +51,18 @@ class Photo < ApplicationRecord
       clichés = interroger_panoramax(roundabout)
       next releve[:injoignables] += 1 if clichés.nil?
 
-      retenus(clichés, roundabout).each { verser(it, releve) }
+      moisson = retenus(clichés, roundabout)
+      releve[:retirees] += perimees(roundabout, moisson.pluck("url")).destroy_all.size
+      moisson.each { verser(it, releve) }
     end
 
     releve
+  end
+
+  def self.perimees(roundabout, adresses)
+    distantes = where(roundabout: roundabout).where.not(image_url: nil)
+
+    adresses.any? ? distantes.where.not(image_url: adresses) : distantes
   end
 
   def self.retenus(clichés, roundabout)

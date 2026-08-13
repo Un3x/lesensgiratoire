@@ -96,6 +96,49 @@ class PanoramaxMoissonTest < ActiveSupport::TestCase
     assert_in_delta 5.0, observation["rapport"], 0.5
   end
 
+  test "la moisson évince les observations distantes qu'elle ne retient plus" do
+    ancienne = Photo.create!(roundabout: @roundabout, taken_on: "2019-01-01", author: "x", licence: "y",
+      source_url: "https://s", image_url: "https://panoramax.test/ancienne/sd.jpg")
+
+    perimees = Photo.perimees(@roundabout, [ "https://panoramax.test/abc/sd.jpg" ])
+
+    assert_includes perimees, ancienne
+  end
+
+  test "une moisson vide évince toutes les observations distantes de l'ouvrage" do
+    Photo.create!(roundabout: @roundabout, taken_on: "2019-01-01", author: "x", licence: "y",
+      source_url: "https://s", image_url: "https://panoramax.test/ancienne/sd.jpg")
+
+    assert_equal 1, Photo.perimees(@roundabout, []).count
+  end
+
+  test "l'éviction épargne les observations versées à la main" do
+    jointe = Photo.create!(roundabout: @roundabout, taken_on: Date.current,
+      image: fixture_file_upload("observation.png", "image/png"))
+
+    assert_not_includes Photo.perimees(@roundabout, [ "https://panoramax.test/abc/sd.jpg" ]), jointe
+  end
+
+  test "un ouvrage ne porte qu'une observation distante par date" do
+    Photo.create!(roundabout: @roundabout, taken_on: "2025-06-12", author: "x", licence: "y",
+      source_url: "https://s", image_url: "https://panoramax.test/premiere/sd.jpg")
+    doublon = Photo.new(roundabout: @roundabout, taken_on: "2025-06-12", author: "x", licence: "y",
+      source_url: "https://s", image_url: "https://panoramax.test/seconde/sd.jpg")
+
+    assert_not doublon.valid?
+    assert_includes doublon.errors.attribute_names, :taken_on
+  end
+
+  test "une observation jointe n'interdit pas une observation distante du même jour" do
+    Photo.create!(roundabout: @roundabout, taken_on: "2025-06-12",
+      image: fixture_file_upload("observation.png", "image/png"))
+
+    distante = Photo.new(roundabout: @roundabout, taken_on: "2025-06-12", author: "x", licence: "y",
+      source_url: "https://s", image_url: "https://panoramax.test/seconde/sd.jpg")
+
+    assert distante.valid?
+  end
+
   test "la moisson verse les clichés retenus au dossier" do
     releve = Photo.releve_vierge
     Photo.retenus([ cliché(lat: 44.799100, lon: -0.600000, azimut: 0) ], @roundabout).each { Photo.verser(it, releve) }
