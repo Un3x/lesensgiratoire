@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_10_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_13_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,8 +45,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_230000) do
   create_table "photos", force: :cascade do |t|
     t.string "author"
     t.datetime "created_at", null: false
+    t.float "field_of_view"
+    t.float "heading"
     t.string "image_url"
     t.string "licence"
+    t.float "pitch"
     t.bigint "roundabout_id", null: false
     t.string "source_url"
     t.date "taken_on", null: false

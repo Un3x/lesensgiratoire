@@ -139,6 +139,46 @@ class PanoramaxMoissonTest < ActiveSupport::TestCase
     assert distante.valid?
   end
 
+  test "une panoramique est versée avec de quoi la redresser" do
+    releve = Photo.releve_vierge
+    Photo.retenus([ cliché(lat: 44.799100, lon: -0.600000, azimut: 0, champ: 360) ], @roundabout)
+      .each { Photo.verser(it, releve) }
+
+    photo = @roundabout.photos.sole
+
+    assert photo.reprojetable?
+    assert_in_delta 0, photo.heading, 0.5
+    assert_equal Photo::INCLINAISON_DEFAUT_DEG, photo.pitch
+    assert_equal Photo::CHAMP_VUE_DEFAUT_DEG, photo.field_of_view
+  end
+
+  test "le cap de redressement vise l'ouvrage, quel que soit le cap de la caméra" do
+    à_l_ouest = Photo.observation_panoramax(
+      cliché(lat: 44.800000, lon: -0.601000, azimut: 200, champ: 360), @roundabout
+    )
+
+    assert_in_delta 90, à_l_ouest["cap_deg"], 1.0
+  end
+
+  test "une photographie à champ ordinaire ne porte pas de redressement" do
+    releve = Photo.releve_vierge
+    Photo.retenus([ cliché(lat: 44.799100, lon: -0.600000, azimut: 0, champ: 90) ], @roundabout)
+      .each { Photo.verser(it, releve) }
+
+    assert_not @roundabout.photos.sole.reprojetable?
+  end
+
+  test "une observation versée depuis un fichier ne porte pas de redressement" do
+    releve = Photo.releve_vierge
+    Photo.verser({
+      "lat" => @roundabout.lat.to_f, "lon" => @roundabout.lon.to_f,
+      "url" => "https://panoramax.test/fichier/sd.jpg", "date" => "2025-01-01",
+      "licence" => "etalab-2.0", "auteur" => "x", "source" => "https://s", "ecart_deg" => 5, "rapport" => 2.0
+    }, releve)
+
+    assert_not @roundabout.photos.sole.reprojetable?
+  end
+
   test "la moisson verse les clichés retenus au dossier" do
     releve = Photo.releve_vierge
     Photo.retenus([ cliché(lat: 44.799100, lon: -0.600000, azimut: 0) ], @roundabout).each { Photo.verser(it, releve) }

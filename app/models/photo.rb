@@ -5,6 +5,8 @@ class Photo < ApplicationRecord
   CADRAGE_TOLERANCE_DEG = 0
   DEMI_OUVERTURE_DEFAUT_DEG = 35
   CHAMP_PANORAMIQUE_DEG = 300
+  INCLINAISON_DEFAUT_DEG = -12.0
+  CHAMP_VUE_DEFAUT_DEG = 75.0
   PANORAMAX_API = "https://api.panoramax.xyz/api"
   MOISSON_RAYON_M = 60
   DATES_MAX_PAR_OUVRAGE = 6
@@ -94,18 +96,22 @@ class Photo < ApplicationRecord
       "source" => "#{PANORAMAX_API}/collections/#{proprietes["collection"]}/items/#{cliché["id"]}",
       "ecart_deg" => ecart_de_visee(lat, lon, proprietes["view:azimuth"], roundabout),
       "rapport" => rayon.positive? ? roundabout.distance_to(lat, lon) / rayon : nil,
-      "champ_deg" => proprietes.dig("pers:interior_orientation", "field_of_view")
+      "champ_deg" => proprietes.dig("pers:interior_orientation", "field_of_view"),
+      "cap_deg" => cap_vers(lat, lon, roundabout)
     }
+  end
+
+  def self.cap_vers(lat, lon, roundabout)
+    nord = (roundabout.lat.to_f - lat) * 111_320.0
+    est = (roundabout.lon.to_f - lon) * 111_320.0 * Math.cos(lat * Math::PI / 180)
+
+    (Math.atan2(est, nord) * 180 / Math::PI) % 360
   end
 
   def self.ecart_de_visee(lat, lon, azimut, roundabout)
     return if azimut.blank?
 
-    nord = (roundabout.lat.to_f - lat) * 111_320.0
-    est = (roundabout.lon.to_f - lon) * 111_320.0 * Math.cos(lat * Math::PI / 180)
-    cap = (Math.atan2(est, nord) * 180 / Math::PI) % 360
-
-    ecart = (cap - azimut).abs % 360
+    ecart = (cap_vers(lat, lon, roundabout) - azimut).abs % 360
     ecart > 180 ? 360 - ecart : ecart
   end
 
@@ -133,6 +139,10 @@ class Photo < ApplicationRecord
     image_url.present?
   end
 
+  def reprojetable?
+    heading.present?
+  end
+
   def illustration
     distante? ? image_url : image
   end
@@ -153,7 +163,8 @@ class Photo < ApplicationRecord
       taken_on: observation.fetch("date"),
       author: observation.fetch("auteur"),
       licence: observation.fetch("licence"),
-      source_url: observation.fetch("source")
+      source_url: observation.fetch("source"),
+      **reprojection(observation)
     )
 
     begin
@@ -164,6 +175,20 @@ class Photo < ApplicationRecord
     end
 
     releve
+  end
+
+  def self.reprojection(observation)
+    return { heading: nil, pitch: nil, field_of_view: nil } unless panoramique?(observation)
+
+    {
+      heading: observation["cap_deg"],
+      pitch: observation["inclinaison_deg"] || INCLINAISON_DEFAUT_DEG,
+      field_of_view: observation["champ_vue_deg"] || CHAMP_VUE_DEFAUT_DEG
+    }
+  end
+
+  def self.panoramique?(observation)
+    observation["champ_deg"].to_f >= CHAMP_PANORAMIQUE_DEG && observation["cap_deg"].present?
   end
 
   def self.interroger_panoramax(roundabout, rayon_m: MOISSON_RAYON_M)

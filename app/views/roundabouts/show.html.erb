@@ -101,9 +101,19 @@
     <% if @roundabout.photos.any? %>
       <ol class="timeline">
         <% @roundabout.photos.each do |photo| %>
-          <li class="observation">
+          <li class="observation"
+            <% if photo.reprojetable? %>
+              data-controller="reprojection"
+              data-reprojection-url-value="<%= photo.image_url %>"
+              data-reprojection-heading-value="<%= photo.heading %>"
+              data-reprojection-pitch-value="<%= photo.pitch %>"
+              data-reprojection-fov-value="<%= photo.field_of_view %>"
+            <% end %>>
             <p class="observation__date"><%= l(photo.taken_on, format: :long) %></p>
-            <%= image_tag photo.illustration, alt: "Observation du #{l(photo.taken_on)} — #{@roundabout.designation}", class: "observation__image", loading: "lazy" %>
+            <%= image_tag photo.illustration, alt: "Observation du #{l(photo.taken_on)} — #{@roundabout.designation}", class: "observation__image", loading: "lazy", data: { reprojection_target: ("origine" if photo.reprojetable?) } %>
+            <% if photo.reprojetable? %>
+              <p class="observation__mentions" data-reprojection-target="mention" hidden>Vue redressée depuis une prise de vue panoramique, orientée vers l'ouvrage.</p>
+            <% end %>
             <p class="observation__mentions">
               <% if photo.distante? %>
                 Cliché : <%= photo.author %>. Licence : <%= photo.licence %>.
