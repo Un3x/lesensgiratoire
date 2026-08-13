@@ -3,7 +3,7 @@ require "test_helper"
 class PanoramaxIngestTest < ActiveSupport::TestCase
   setup do
     @roundabout = Roundabout.create!(lat: 44.837789, lon: -0.579180, diameter_m: 42.0, commune: "Bordeaux")
-    @fichier = Rails.root.join("tmp/panoramax_test.jsonl")
+    @fichier = Rails.root.join("tmp/panoramax_#{Process.pid}_#{SecureRandom.hex(4)}.jsonl")
   end
 
   teardown { File.delete(@fichier) if File.exist?(@fichier) }
