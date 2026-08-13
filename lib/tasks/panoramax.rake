@@ -1,4 +1,21 @@
 namespace :panoramax do
+  desc "Moissonne les prises de vue Panoramax autour des ronds-points illustrables"
+  task :moisson, [ :depuis, :combien ] => :environment do |_tache, args|
+    depuis = args[:depuis].to_i
+    combien = (args[:combien] || 500).to_i
+
+    ouvrages = Roundabout.where(id: Photo.where.not(image_url: nil).select(:roundabout_id))
+      .order(:id).offset(depuis).limit(combien)
+
+    puts "Moisson sur #{ouvrages.count} ouvrages, à partir du rang #{depuis}."
+    releve = Photo.moissonner_panoramax(ouvrages)
+
+    puts "#{releve[:versees]} observations versées, #{releve[:deja_versees]} déjà présentes."
+    puts "#{releve[:hors_cadrage]} écartées pour cadrage, dont #{releve[:retirees]} retirées." if releve[:hors_cadrage].positive?
+    puts "#{releve[:injoignables]} ouvrages sans réponse de Panoramax." if releve[:injoignables].positive?
+    puts "#{releve[:refusees].size} refusées." if releve[:refusees].any?
+  end
+
   desc "Verse au dossier les observations Panoramax d'un fichier JSONL"
   task :import, [ :fichier ] => :environment do |_tache, args|
     abort "Usage : bin/rails panoramax:import[chemin/du/fichier.jsonl]" if args[:fichier].blank?
