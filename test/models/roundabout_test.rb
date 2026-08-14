@@ -24,6 +24,28 @@ class RoundaboutTest < ActiveSupport::TestCase
     assert_equal voisin, Roundabout.matching_position(44.838200, -0.579180)
   end
 
+  test "l'échantillon d'affichage est stable d'un relevé à l'autre" do
+    40.times { |i| Roundabout.create!(lat: 45.0 + i / 1000.0, lon: 1.0, diameter_m: 20 + i) }
+
+    premier = Roundabout.echantillon(10).pluck(:id)
+
+    assert_equal 10, premier.size
+    assert_equal premier, Roundabout.echantillon(10).pluck(:id)
+  end
+
+  test "l'échantillon ne privilégie pas les grands ouvrages" do
+    100.times { |i| Roundabout.create!(lat: 46.0 + i / 1000.0, lon: 2.0, diameter_m: 20 + i) }
+
+    tires = Roundabout.where(lon: 2.0).echantillon(20).pluck(:diameter_m).map(&:to_f)
+    plus_grands = Roundabout.where(lon: 2.0).order(diameter_m: :desc).limit(20).pluck(:diameter_m).map(&:to_f)
+
+    assert_operator tires.sum / tires.size, :<, plus_grands.sum / plus_grands.size
+  end
+
+  test "chaque ouvrage reçoit une clé d'échantillonnage à l'inscription" do
+    assert_predicate Roundabout.create!(lat: 47.0, lon: 3.0).sample_key, :present?
+  end
+
   test "le seuil de diamètre ne filtre que l'affichage" do
     petit = Roundabout.create!(lat: 45.0, lon: 0.0, diameter_m: 12.0)
 

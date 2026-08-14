@@ -18,12 +18,12 @@ class RoundaboutsController < ApplicationController
     def recensement
       scope = Roundabout.at_least(min_diameter).within(*bbox)
       total = scope.count
-      points = scope.order(diameter_m: :desc).limit(MAX_MARKERS)
+      points = scope.echantillon(MAX_MARKERS)
         .pluck(:id, :lat, :lon, :diameter_m, :name, :commune)
 
       {
         total: total,
-        truncated: total > MAX_MARKERS,
+        sampled: total > MAX_MARKERS,
         limit: MAX_MARKERS,
         roundabouts: points.map { |id, lat, lon, diameter, name, commune|
           { id: id, lat: lat.to_f, lon: lon.to_f, d: diameter&.to_f, name: name, commune: commune }

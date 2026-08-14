@@ -14,7 +14,7 @@ class ParcoursTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal [ @roundabout.id ], releve["roundabouts"].map { it["id"] }
     assert_equal 1, releve["total"]
-    assert_not releve["truncated"]
+    assert_not releve["sampled"]
   end
 
   test "le seuil de diamètre est réglable par le consultant" do

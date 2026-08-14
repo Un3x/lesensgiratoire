@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_13_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_14_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -70,10 +70,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_13_120000) do
     t.string "name"
     t.bigint "osm_way_ids", default: [], null: false, array: true
     t.string "region"
+    t.integer "sample_key", default: -> { "((random() * (2147483647)::double precision))::integer" }, null: false
     t.datetime "updated_at", null: false
     t.index ["diameter_m"], name: "index_roundabouts_on_diameter_m"
     t.index ["insee_code"], name: "index_roundabouts_on_insee_code"
     t.index ["lat", "lon"], name: "index_roundabouts_on_lat_and_lon"
+    t.index ["sample_key"], name: "index_roundabouts_on_sample_key"
   end
 
   create_table "votes", force: :cascade do |t|

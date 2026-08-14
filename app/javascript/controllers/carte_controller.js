@@ -118,10 +118,10 @@ export default class extends Controller {
     </div>`
   }
 
-  libelle({ total, truncated, limit }) {
+  libelle({ total, sampled, limit }) {
     if (total === 0) return "Aucun rond-point ne correspond aux critères de recherche."
-    if (truncated) {
-      return `Emprise trop vaste : ${NOMBRE.format(limit)} ronds-points représentés sur ${NOMBRE.format(total)} recensés. Rapprochez-vous pour obtenir le relevé complet.`
+    if (sampled) {
+      return `${NOMBRE.format(total)} ronds-points recensés dans l'emprise affichée. La carte en représente ${NOMBRE.format(limit)}, prélevés uniformément : la densité figurée est celle du recensement. Rapprochez-vous pour obtenir le relevé complet.`
     }
     return `${NOMBRE.format(total)} ${total > 1 ? "ronds-points recensés" : "rond-point recensé"} dans l'emprise affichée.`
   }
