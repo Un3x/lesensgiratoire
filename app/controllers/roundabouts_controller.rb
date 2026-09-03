@@ -17,6 +17,7 @@ class RoundaboutsController < ApplicationController
   private
     def recensement
       scope = Roundabout.at_least(min_diameter).within(*bbox)
+      scope = scope.public_send(params[:junction_type]) if Roundabout.junction_types.key?(params[:junction_type])
       total = scope.count
       points = scope.echantillon(MAX_MARKERS)
         .pluck(:id, :lat, :lon, :diameter_m, :name, :commune)

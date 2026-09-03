@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_14_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -65,6 +65,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_14_090000) do
     t.string "departement"
     t.decimal "diameter_m", precision: 6, scale: 1
     t.string "insee_code"
+    t.string "junction_type", default: "roundabout", null: false
     t.decimal "lat", precision: 9, scale: 6, null: false
     t.decimal "lon", precision: 9, scale: 6, null: false
     t.string "name"
@@ -74,6 +75,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_14_090000) do
     t.datetime "updated_at", null: false
     t.index ["diameter_m"], name: "index_roundabouts_on_diameter_m"
     t.index ["insee_code"], name: "index_roundabouts_on_insee_code"
+    t.index ["junction_type"], name: "index_roundabouts_on_junction_type"
     t.index ["lat", "lon"], name: "index_roundabouts_on_lat_and_lon"
     t.index ["sample_key"], name: "index_roundabouts_on_sample_key"
   end

@@ -23,6 +23,10 @@ fr:
       record_invalid: "La validation a échoué : %{errors}"
   activerecord:
     attributes:
+      roundabout:
+        junction_type: Régime de priorité
+        junction_type/roundabout: À l'anneau (carrefour à sens giratoire)
+        junction_type/circular: À l'entrant (rond-point)
       photo:
         taken_on: Date de prise de vue
         image: Photographie

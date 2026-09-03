@@ -28,6 +28,9 @@
         <dt>Diamètre</dt>
         <dd><%= @roundabout.diameter_m ? "#{number_with_precision(@roundabout.diameter_m, precision: 1)} mètres" : "Non mesuré" %></dd>
 
+        <dt><%= Roundabout.human_attribute_name(:junction_type) %></dt>
+        <dd><%= Roundabout.human_attribute_name("junction_type/#{@roundabout.junction_type}") %></dd>
+
         <dt>Coordonnées</dt>
         <dd><%= @roundabout.coordinates %></dd>
 

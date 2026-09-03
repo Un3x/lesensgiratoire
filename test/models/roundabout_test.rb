@@ -6,6 +6,15 @@ class RoundaboutTest < ActiveSupport::TestCase
       commune: "Bordeaux", departement: "Gironde")
   end
 
+  test "un régime de priorité inconnu est refusé" do
+    assert_raises(ArgumentError) { Roundabout.new(junction_type: "autre") }
+  end
+
+  test "un ouvrage relève par défaut de la priorité à l'anneau" do
+    assert @roundabout.roundabout?
+    assert_empty Roundabout.circular
+  end
+
   test "réapparie un relevé situé à moins de soixante-dix mètres" do
     assert_equal @roundabout, Roundabout.matching_position(44.838089, -0.579180)
   end

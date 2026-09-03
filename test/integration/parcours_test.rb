@@ -23,6 +23,29 @@ class ParcoursTest < ActionDispatch::IntegrationTest
     assert_equal 2, response.parsed_body["total"]
   end
 
+  test "la carte se restreint à un régime de priorité et ignore un régime inconnu" do
+    etoile = Roundabout.create!(lat: 44.845000, lon: -0.585000, diameter_m: 137.6, junction_type: "circular")
+
+    get roundabouts_path(format: :json, bbox: "-1.0,44.5,0.0,45.0", junction_type: "circular")
+    assert_equal [ etoile.id ], response.parsed_body["roundabouts"].map { it["id"] }
+
+    get roundabouts_path(format: :json, bbox: "-1.0,44.5,0.0,45.0", junction_type: "roundabout")
+    assert_equal [ @roundabout.id ], response.parsed_body["roundabouts"].map { it["id"] }
+
+    get roundabouts_path(format: :json, bbox: "-1.0,44.5,0.0,45.0", junction_type: "autre")
+    assert_equal 2, response.parsed_body["total"]
+  end
+
+  test "la fiche énonce le régime de priorité de l'ouvrage" do
+    get roundabout_path(@roundabout)
+    assert_select "dt", "Régime de priorité"
+    assert_select "dd", "À l'anneau (carrefour à sens giratoire)"
+
+    @roundabout.circular!
+    get roundabout_path(@roundabout)
+    assert_select "dd", "À l'entrant (rond-point)"
+  end
+
   test "une emprise hors de France ne renvoie aucun ouvrage" do
     get roundabouts_path(format: :json, bbox: "10.0,50.0,11.0,51.0")
 

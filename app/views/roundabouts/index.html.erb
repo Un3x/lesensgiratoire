@@ -26,6 +26,14 @@
       <p class="carte__mention">En deçà de vingt mètres, l'ouvrage relève le plus souvent de la raquette de retournement. Le seuil ne conditionne que l'affichage.</p>
     </div>
 
+    <fieldset class="carte__reglage carte__regime" data-action="change->carte#regimeModifie">
+      <legend><%= Roundabout.human_attribute_name(:junction_type) %></legend>
+      <label><input type="radio" name="junction_type" value="" checked data-carte-target="regime"> Tous les ouvrages</label>
+      <% Roundabout.junction_types.each_key do |regime| %>
+        <label><input type="radio" name="junction_type" value="<%= regime %>" data-carte-target="regime"> <%= Roundabout.human_attribute_name("junction_type/#{regime}") %></label>
+      <% end %>
+    </fieldset>
+
     <p class="carte__etat" role="status" aria-live="polite" data-carte-target="etat">Relevé en cours.</p>
   </div>
 </section>

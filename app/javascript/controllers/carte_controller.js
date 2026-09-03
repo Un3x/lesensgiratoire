@@ -4,7 +4,7 @@ import * as L from "leaflet"
 const NOMBRE = new Intl.NumberFormat("fr-FR")
 
 export default class extends Controller {
-  static targets = ["toile", "seuil", "seuilValeur", "etat"]
+  static targets = ["toile", "seuil", "seuilValeur", "regime", "etat"]
   static values = {
     url: String,
     ficheUrl: String,
@@ -45,6 +45,10 @@ export default class extends Controller {
     this.recenser()
   }
 
+  regimeModifie() {
+    this.recenser()
+  }
+
   async recenser() {
     clearTimeout(this.minuteur)
     this.minuteur = setTimeout(() => this.charger(), 200)
@@ -54,7 +58,8 @@ export default class extends Controller {
     const limites = this.carte.getBounds()
     const parametres = new URLSearchParams({
       bbox: [limites.getWest(), limites.getSouth(), limites.getEast(), limites.getNorth()].join(","),
-      min_diameter: this.minDiameterValue
+      min_diameter: this.minDiameterValue,
+      junction_type: this.regimeTargets.find((radio) => radio.checked)?.value ?? ""
     })
 
     this.controleur?.abort()

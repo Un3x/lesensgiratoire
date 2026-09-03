@@ -113,6 +113,14 @@ a { color: var(--accent); }
 
 .carte__curseur output { font-variant-numeric: tabular-nums; font-size: 0.9rem; min-width: 3.5rem; }
 
+.carte__regime { border: 0; padding: 0; margin: 0.9rem 0 0; }
+
+.carte__regime legend { padding: 0; font-size: 0.85rem; color: var(--encre-attenuee); }
+
+.carte__regime label { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.35rem; font-size: 0.9rem; }
+
+.carte__regime input { accent-color: var(--accent); }
+
 .carte__mention { margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--encre-attenuee); }
 
 .carte__etat {
