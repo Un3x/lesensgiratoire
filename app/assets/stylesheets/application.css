@@ -326,3 +326,5 @@ a { color: var(--accent); }
   .fiche__signaletique dl { grid-template-columns: 1fr; }
   .fiche__signaletique dd { padding-top: 0; border-top: 0; }
 }
+
+.validation__decisions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }

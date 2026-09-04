@@ -4,7 +4,7 @@ class PhotosController < ApplicationController
     @photo = Photo.new(photo_params.merge(roundabout: @roundabout))
 
     if @photo.save
-      redirect_to @roundabout, notice: "L'observation du #{l(@photo.taken_on)} a été versée au dossier."
+      redirect_to @roundabout, notice: "L'observation du #{l(@photo.taken_on)} a été reçue et sera examinée avant publication."
     else
       render "roundabouts/show", status: :unprocessable_content
     end
@@ -12,6 +12,6 @@ class PhotosController < ApplicationController
 
   private
     def photo_params
-      params.expect(photo: [ :image, :taken_on, :author, :licence, :source_url ])
+      params.expect(photo: [ :image, :taken_on, :author, :licence ])
     end
 end

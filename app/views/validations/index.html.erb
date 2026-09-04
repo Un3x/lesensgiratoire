@@ -1,0 +1,28 @@
+<% content_for :title, "File d'attente de validation — Le Sens Giratoire" %>
+
+<section class="validation">
+  <h1>File d'attente de validation</h1>
+  <p class="fiche__mention">Les observations versées par les visiteurs ne paraissent sur la fiche qu'après admission.</p>
+
+  <% if @photos.any? %>
+    <ol class="timeline">
+      <% @photos.each do |photo| %>
+        <li class="observation">
+          <p class="observation__date"><%= l(photo.taken_on, format: :long) %> — <%= link_to photo.roundabout.designation, photo.roundabout %><%= " (#{photo.roundabout.commune})" if photo.roundabout.commune.present? %></p>
+          <%= image_tag photo.image, alt: "Observation du #{l(photo.taken_on)} en attente de validation", class: "observation__image", loading: "lazy" %>
+          <p class="observation__mentions">
+            <%= photo.author.present? ? "Cliché : #{photo.author}." : "Auteur non renseigné." %>
+            Licence : <%= photo.licence %>.
+            Reçue le <%= l(photo.created_at.to_date) %>, <%= number_to_human_size(photo.image.byte_size) %>.
+          </p>
+          <div class="validation__decisions">
+            <%= button_to "Admettre", validation_path(photo), method: :patch, class: "bouton" %>
+            <%= button_to "Rejeter", validation_path(photo), method: :delete, class: "bouton", form: { data: { turbo_confirm: "Rejeter cette observation ? Le fichier sera supprimé." } } %>
+          </div>
+        </li>
+      <% end %>
+    </ol>
+  <% else %>
+    <p class="etat-vide">Aucune observation n'est en attente de validation.</p>
+  <% end %>
+</section>

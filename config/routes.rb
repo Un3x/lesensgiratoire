@@ -8,5 +8,7 @@ Rails.application.routes.draw do
     resources :votes, only: :create
   end
 
+  resources :validations, path: "validation", only: %i[index update destroy]
+
   get "palmares(/:year)", to: "palmares#show", as: :palmares, constraints: { year: /\d{4}/ }
 end

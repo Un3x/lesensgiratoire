@@ -102,15 +102,6 @@ class ParcoursTest < ActionDispatch::IntegrationTest
     assert_select ".palmares__categorie:last-of-type .classement td", text: "Mérignac"
   end
 
-  test "une observation datée est versée au dossier" do
-    assert_difference -> { @roundabout.photos.count }, 1 do
-      post roundabout_photos_path(@roundabout), params: {
-        photo: { image: fixture_file_upload("observation.png", "image/png"), taken_on: "2026-07-14" }
-      }
-    end
-    assert_redirected_to @roundabout
-  end
-
   test "une observation sans date est refusée sans quitter la fiche" do
     assert_no_difference -> { @roundabout.photos.count } do
       post roundabout_photos_path(@roundabout), params: {
@@ -125,5 +116,63 @@ class ParcoursTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".etat-vide", /Aucun avis de cette nature n'a été exprimé/
+  end
+
+  test "une photographie versée par un visiteur attend sa validation avant de paraître sur la fiche" do
+    assert_difference -> { Photo.count }, 1 do
+      post roundabout_photos_path(@roundabout), params: { photo: {
+        image: fixture_file_upload("observation.png", "image/png"), taken_on: Date.current,
+        licence: "CC BY-SA 4.0", author: "Une visiteuse" } }
+    end
+    assert_redirected_to @roundabout
+    follow_redirect!
+    assert_select ".notification", /sera examinée avant publication/
+    assert_select ".observation", count: 0
+
+    @roundabout.photos.sole.update!(validated_at: Time.current)
+    get roundabout_path(@roundabout)
+    assert_select ".observation", count: 1
+    assert_select ".observation__mentions", /Cliché : Une visiteuse\. Licence : CC BY-SA 4\.0\./
+  end
+
+  test "le formulaire de versement propose la licence CC BY-SA 4.0 par défaut" do
+    get roundabout_path(@roundabout)
+
+    assert_select "select[name='photo[licence]'] option[selected][value='CC BY-SA 4.0']"
+    assert_select "select[name='photo[licence]'] option", count: Photo::LICENCES.size
+    assert_select "input[name='photo[source_url]']", count: 0
+  end
+
+  test "un versement irrecevable est refusé avec ses motifs" do
+    assert_no_difference -> { Photo.count } do
+      post roundabout_photos_path(@roundabout), params: { photo: {
+        image: fixture_file_upload("observation.png", "image/png"), taken_on: Date.current, licence: "CC BY 4.0" } }
+    end
+    assert_response :unprocessable_content
+    assert_select ".formulaire__erreurs li", /Auteur/
+  end
+
+  test "la file de validation est réservée et publie ou retire les observations en attente" do
+    en_attente = Photo.create!(roundabout: @roundabout, taken_on: Date.current, author: "x",
+      image: fixture_file_upload("observation.png", "image/png"))
+
+    get validations_path
+    assert_response :unauthorized
+
+    get validations_path, headers: { "HTTP_AUTHORIZATION" => ActionController::HttpAuthentication::Basic.encode_credentials("validation", "secret") }
+    assert_response :success
+    assert_select "h1", "File d'attente de validation"
+    assert_select "form[action='#{validation_path(en_attente)}']", minimum: 1
+
+    patch validation_path(en_attente), headers: { "HTTP_AUTHORIZATION" => ActionController::HttpAuthentication::Basic.encode_credentials("validation", "secret") }
+    assert_redirected_to validations_path
+    assert en_attente.reload.validated_at.present?
+
+    rejetee = Photo.create!(roundabout: @roundabout, taken_on: Date.current, author: "x",
+      image: fixture_file_upload("observation.png", "image/png"))
+    assert_difference -> { Photo.count }, -1 do
+      delete validation_path(rejetee), headers: { "HTTP_AUTHORIZATION" => ActionController::HttpAuthentication::Basic.encode_credentials("validation", "secret") }
+    end
+    assert_redirected_to validations_path
   end
 end

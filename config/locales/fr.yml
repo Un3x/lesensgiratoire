@@ -33,9 +33,16 @@ fr:
         author: Auteur
         licence: Licence
         source_url: Adresse de la source
+        validated_at: Date de validation
     errors:
       models:
         photo:
           attributes:
             image:
               blank: doit être jointe
+              not_an_image: doit être un fichier image
+              too_large: ne doit pas dépasser dix mégaoctets
+            licence:
+              inclusion: doit être choisie parmi les licences proposées
+            author:
+              attribution_requise: doit être renseigné pour une licence d'attribution

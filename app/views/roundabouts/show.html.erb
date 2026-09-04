@@ -101,9 +101,9 @@
   <section class="fiche__observations">
     <h2>Observations photographiques</h2>
 
-    <% if @roundabout.photos.any? %>
+    <% if @roundabout.photos.publiees.any? %>
       <ol class="timeline">
-        <% @roundabout.photos.each do |photo| %>
+        <% @roundabout.photos.publiees.each do |photo| %>
           <li class="observation"
             <% if photo.reprojetable? %>
               data-controller="reprojection"
@@ -122,9 +122,7 @@
                 Cliché : <%= photo.author %>. Licence : <%= photo.licence %>.
                 <%= link_to "Prise de vue d'origine", photo.source_url, rel: "noopener" %>
               <% else %>
-                <%= photo.author.present? ? "Cliché : #{photo.author}." : "Auteur non renseigné." %>
-                <%= "Licence : #{photo.licence}." if photo.licence.present? %>
-                <%= link_to "Source", photo.source_url, rel: "nofollow noopener" if photo.source_url.present? %>
+                <%= [ ("Cliché : #{photo.author}." if photo.author.present?), "Licence : #{photo.licence}." ].compact.join(" ") %>
               <% end %>
             </p>
           </li>
@@ -159,23 +157,18 @@
         </div>
 
         <div class="champ">
-          <%= form.label :author, "Auteur (facultatif)" %>
+          <%= form.label :licence, "Licence de publication" %>
+          <%= form.select :licence, Photo::LICENCES %>
+        </div>
+
+        <div class="champ">
+          <%= form.label :author, "Auteur (facultatif sous CC0 1.0)" %>
           <%= form.text_field :author %>
-        </div>
-
-        <div class="champ">
-          <%= form.label :licence, "Licence (facultatif)" %>
-          <%= form.text_field :licence %>
-        </div>
-
-        <div class="champ">
-          <%= form.label :source_url, "Adresse de la source (facultatif)" %>
-          <%= form.url_field :source_url %>
         </div>
 
         <%= form.submit "Verser au dossier", class: "bouton" %>
       <% end %>
-      <p class="fiche__mention">Une observation est datée. Un rond-point se transforme au fil des saisons, la date de prise de vue est donc requise.</p>
+      <p class="fiche__mention">Une observation est datée. Un rond-point se transforme au fil des saisons, la date de prise de vue est donc requise. Le fichier ne doit pas dépasser dix mégaoctets. L'observation est examinée avant publication.</p>
     </div>
   </section>
 </article>

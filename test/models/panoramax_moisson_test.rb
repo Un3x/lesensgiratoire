@@ -144,7 +144,7 @@ class PanoramaxMoissonTest < ActiveSupport::TestCase
   end
 
   test "l'éviction épargne les observations versées à la main" do
-    jointe = Photo.create!(roundabout: @roundabout, taken_on: Date.current,
+    jointe = Photo.create!(roundabout: @roundabout, taken_on: Date.current, author: "x",
       image: fixture_file_upload("observation.png", "image/png"))
 
     assert_not_includes Photo.perimees(@roundabout, [ "https://panoramax.test/abc/sd.jpg" ]), jointe
@@ -161,7 +161,7 @@ class PanoramaxMoissonTest < ActiveSupport::TestCase
   end
 
   test "une observation jointe n'interdit pas une observation distante du même jour" do
-    Photo.create!(roundabout: @roundabout, taken_on: "2025-06-12",
+    Photo.create!(roundabout: @roundabout, taken_on: "2025-06-12", author: "x",
       image: fixture_file_upload("observation.png", "image/png"))
 
     distante = Photo.new(roundabout: @roundabout, taken_on: "2025-06-12", author: "x", licence: "y",

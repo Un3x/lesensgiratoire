@@ -15,12 +15,17 @@ class Photo < ApplicationRecord
   MOISSON_RAYON_M = 60
   MOISSON_LIMITE = 10_000
   DATES_MAX_PAR_OUVRAGE = 6
+  LICENCES = [ "CC BY-SA 4.0", "CC BY 4.0", "CC0 1.0" ].freeze
+  TAILLE_MAX = 10.megabytes
 
   belongs_to :roundabout
 
   has_one_attached :image
 
+  attribute :licence, default: LICENCES.first
+
   validate :illustration_presente
+  validate :image_recevable
   validates :taken_on, presence: true,
     comparison: { less_than_or_equal_to: ->(_) { Date.current },
                   message: "ne peut pas être postérieure à la date du jour" }
@@ -34,7 +39,15 @@ class Photo < ApplicationRecord
       message: "a déjà fait l'objet d'une observation distante pour cet ouvrage" }
   end
 
+  with_options unless: :distante? do
+    validates :licence, inclusion: { in: LICENCES }
+    validates :author, presence: { message: :attribution_requise }, unless: -> { licence == "CC0 1.0" }
+  end
+
   normalizes :author, :licence, :source_url, :image_url, with: -> { it&.strip.presence }
+
+  scope :publiees, -> { where.not(validated_at: nil) }
+  scope :en_attente, -> { where(validated_at: nil) }
 
   def self.releve_vierge
     { versees: 0, deja_versees: 0, hors_cadrage: 0, retirees: 0, sans_ouvrage: 0, injoignables: 0, refusees: [] }
@@ -169,6 +182,7 @@ class Photo < ApplicationRecord
       author: observation.fetch("auteur"),
       licence: observation.fetch("licence"),
       source_url: observation.fetch("source"),
+      validated_at: photo.validated_at || Time.current,
       **reprojection(observation)
     )
 
@@ -286,5 +300,12 @@ class Photo < ApplicationRecord
       return if image.attached? || distante?
 
       errors.add(:image, "doit être jointe ou référencée par une adresse distante")
+    end
+
+    def image_recevable
+      return unless image.attached?
+
+      errors.add(:image, :not_an_image) unless image.content_type.to_s.start_with?("image/")
+      errors.add(:image, :too_large) if image.byte_size.to_i > TAILLE_MAX
     end
 end

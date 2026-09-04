@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_04_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,9 +54,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_130000) do
     t.string "source_url"
     t.date "taken_on", null: false
     t.datetime "updated_at", null: false
+    t.datetime "validated_at"
     t.index ["roundabout_id", "image_url"], name: "index_photos_on_roundabout_id_and_image_url", unique: true, where: "(image_url IS NOT NULL)"
     t.index ["roundabout_id", "taken_on"], name: "index_photos_on_roundabout_id_and_taken_on"
     t.index ["roundabout_id"], name: "index_photos_on_roundabout_id"
+    t.index ["validated_at"], name: "index_photos_on_validated_at", where: "(validated_at IS NULL)"
   end
 
   create_table "roundabouts", force: :cascade do |t|

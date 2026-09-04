@@ -143,7 +143,7 @@ class PanoramaxIngestTest < ActiveSupport::TestCase
   end
 
   test "le retrait ne touche pas les observations versées à la main" do
-    jointe = Photo.create!(roundabout: @roundabout, taken_on: Date.current,
+    jointe = Photo.create!(roundabout: @roundabout, taken_on: Date.current, author: "x",
       image: fixture_file_upload("observation.png", "image/png"))
     ecrire(observation(ecart_deg: 50, rapport: 2.0))
 

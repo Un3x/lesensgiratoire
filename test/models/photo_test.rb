@@ -44,11 +44,59 @@ class PhotoTest < ActiveSupport::TestCase
     end
   end
 
-  test "une observation jointe n'exige pas les mentions d'attribution" do
-    photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, image: @image)
+  test "une observation jointe porte par défaut la licence CC BY-SA 4.0 et n'exige pas de source" do
+    photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, image: @image, author: "Une visiteuse")
 
+    assert_equal "CC BY-SA 4.0", photo.licence
     assert photo.valid?
     assert_not photo.distante?
+  end
+
+  test "une observation jointe n'admet qu'une licence de la liste" do
+    photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, image: @image, author: "x", licence: "Tous droits réservés")
+    assert_not photo.valid?
+    assert_includes photo.errors.attribute_names, :licence
+
+    photo.licence = nil
+    assert_not photo.valid?
+
+    photo.licence = "CC0 1.0"
+    assert photo.valid?
+  end
+
+  test "une observation jointe sous licence d'attribution nomme son auteur, sauf sous CC0" do
+    photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, image: @image, licence: "CC BY 4.0")
+    assert_not photo.valid?
+    assert_includes photo.errors.attribute_names, :author
+
+    photo.licence = "CC0 1.0"
+    assert photo.valid?
+  end
+
+  test "un fichier qui n'est pas une image est refusé" do
+    photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, author: "x",
+      image: fixture_file_upload("observation.txt", "text/plain"))
+
+    assert_not photo.valid?
+    assert_includes photo.errors.attribute_names, :image
+  end
+
+  test "un fichier de plus de dix mégaoctets est refusé" do
+    photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, author: "x", image: @image)
+    photo.image.blob.byte_size = 10.megabytes + 1
+
+    assert_not photo.valid?
+    assert_includes photo.errors.attribute_names, :image
+  end
+
+  test "une observation jointe attend sa validation, une observation distante est publiée d'emblée" do
+    jointe = Photo.create!(roundabout: @roundabout, taken_on: Date.current, image: @image, author: "x")
+    releve = Photo.releve_vierge
+    Photo.verser({ "lat" => @roundabout.lat.to_f, "lon" => @roundabout.lon.to_f, "url" => PANORAMAX[:image_url],
+      "date" => "2025-01-01", "licence" => "etalab-2.0", "auteur" => "x", "source" => "https://s" }, releve)
+
+    assert_equal [ Photo.find_by(image_url: PANORAMAX[:image_url]) ], Photo.publiees.to_a
+    assert_nil jointe.validated_at
   end
 
   test "une observation postérieure au jour de versement est irrecevable" do
@@ -58,16 +106,17 @@ class PhotoTest < ActiveSupport::TestCase
   end
 
   test "les observations se lisent de la plus récente à la plus ancienne" do
-    ancienne = Photo.create!(roundabout: @roundabout, taken_on: Date.new(2024, 3, 1), image: @image)
-    recente = Photo.create!(roundabout: @roundabout, taken_on: Date.new(2026, 3, 1), image: @image)
+    ancienne = Photo.create!(roundabout: @roundabout, taken_on: Date.new(2024, 3, 1), image: @image, author: "x")
+    recente = Photo.create!(roundabout: @roundabout, taken_on: Date.new(2026, 3, 1), image: @image, author: "x")
 
     assert_equal [ recente, ancienne ], @roundabout.photos.to_a
   end
 
-  test "les mentions de licence vides ne sont pas conservées" do
-    photo = Photo.create!(roundabout: @roundabout, taken_on: Date.current, image: @image, author: "  ", licence: " CC BY-SA 4.0 ")
+  test "les mentions vides ne sont pas conservées" do
+    photo = Photo.create!(roundabout: @roundabout, taken_on: Date.current, image: @image, author: " Une visiteuse ", licence: " CC0 1.0 ", source_url: "  ")
 
-    assert_nil photo.author
-    assert_equal "CC BY-SA 4.0", photo.licence
+    assert_equal "Une visiteuse", photo.author
+    assert_equal "CC0 1.0", photo.licence
+    assert_nil photo.source_url
   end
 end
