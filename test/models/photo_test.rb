@@ -73,12 +73,13 @@ class PhotoTest < ActiveSupport::TestCase
     assert photo.valid?
   end
 
-  test "un fichier qui n'est pas une image est refusé" do
-    photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, author: "x",
-      image: fixture_file_upload("observation.txt", "text/plain"))
+  test "seuls les fichiers JPEG, PNG, WebP et GIF sont admis" do
+    %w[observation.txt observation.svg].each do |fichier|
+      photo = Photo.new(roundabout: @roundabout, taken_on: Date.current, author: "x", image: fixture_file_upload(fichier))
 
-    assert_not photo.valid?
-    assert_includes photo.errors.attribute_names, :image
+      assert_not photo.valid?, "#{fichier} devrait être refusé"
+      assert_includes photo.errors.attribute_names, :image
+    end
   end
 
   test "un fichier de plus de dix mégaoctets est refusé" do

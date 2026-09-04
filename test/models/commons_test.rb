@@ -63,4 +63,13 @@ class CommonsTest < ActiveSupport::TestCase
 
     assert_equal 1, releve[:injoignables]
   end
+
+  test "un échec de Wikidata compte l'ouvrage injoignable au lieu de le passer sous silence" do
+    lire = ->(adresse) { { "elements" => [ { "id" => 11288145, "tags" => { "wikidata" => "Q3390281" } } ] } unless adresse.to_s.include?("wikidata.org") }
+
+    releve = avec_lecture_distante(lire) { Photo.illustrer_depuis_commons([ @roundabout ]) }
+
+    assert_equal 1, releve[:injoignables]
+    assert_equal 0, releve[:versees]
+  end
 end

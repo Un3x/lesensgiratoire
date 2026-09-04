@@ -148,7 +148,7 @@
 
         <div class="champ">
           <%= form.label :image, "Photographie" %>
-          <%= form.file_field :image, accept: "image/*", required: true %>
+          <%= form.file_field :image, accept: Photo::TYPES_IMAGE.join(","), required: true %>
         </div>
 
         <div class="champ">

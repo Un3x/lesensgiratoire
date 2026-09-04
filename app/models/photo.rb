@@ -17,6 +17,7 @@ class Photo < ApplicationRecord
   DATES_MAX_PAR_OUVRAGE = 6
   LICENCES = [ "CC BY-SA 4.0", "CC BY 4.0", "CC0 1.0" ].freeze
   TAILLE_MAX = 10.megabytes
+  TYPES_IMAGE = %w[image/jpeg image/png image/webp image/gif].freeze
 
   belongs_to :roundabout
 
@@ -227,16 +228,19 @@ class Photo < ApplicationRecord
   def self.illustrer_depuis_commons(roundabouts, releve = releve_vierge)
     roundabouts = roundabouts.to_a
     wikidata = wikidata_des_ways(roundabouts.flat_map(&:osm_way_ids))
-    return releve.tap { it[:injoignables] += roundabouts.size } if wikidata.nil?
-
-    fichiers = images_wikidata(wikidata.values.uniq)
-    pages = pages_commons(fichiers.values.uniq)
+    fichiers = images_wikidata(wikidata.values.grep(String).uniq)
+    pages = pages_commons(fichiers.values.grep(String).uniq)
 
     roundabouts.each do |roundabout|
-      entite = roundabout.osm_way_ids.filter_map { wikidata[it] }.first or next
-      page = pages[fichiers[entite]] or next
-      observation = observation_commons(page, roundabout)
-      observation ? verser(observation, releve) : releve[:refusees] << "#{page["title"]} : date de prise de vue absente"
+      resolutions = roundabout.osm_way_ids.filter_map { wikidata[it] }
+      resultat = resolutions.grep(String).first || resolutions.first
+      resultat = fichiers[resultat] if resultat.is_a?(String)
+      resultat = pages[resultat] if resultat.is_a?(String)
+      next if resultat.nil?
+      next releve[:injoignables] += 1 if resultat == :injoignable
+
+      observation = observation_commons(resultat, roundabout)
+      observation ? verser(observation, releve) : releve[:refusees] << "#{resultat["title"]} : date de prise de vue absente"
     end
 
     releve
@@ -244,14 +248,14 @@ class Photo < ApplicationRecord
 
   def self.wikidata_des_ways(way_ids)
     way_ids.each_slice(250).each_with_object({}) do |lot, tags|
-      reponse = lire_json(URI("#{OSM_API}/ways.json?ways=#{lot.join(",")}")) or return
+      reponse = lire_json(URI("#{OSM_API}/ways.json?ways=#{lot.join(",")}")) or next lot.each { tags[it] = :injoignable }
       reponse.fetch("elements", []).each { tags[it["id"]] = it.dig("tags", "wikidata") if it.dig("tags", "wikidata") }
     end
   end
 
   def self.images_wikidata(entites)
     entites.each_slice(50).each_with_object({}) do |lot, images|
-      reponse = lire_json(URI("#{WIKIDATA_API}?action=wbgetentities&props=claims&format=json&ids=#{lot.join("|")}")) or next
+      reponse = lire_json(URI("#{WIKIDATA_API}?action=wbgetentities&props=claims&format=json&ids=#{lot.join("|")}")) or next lot.each { images[it] = :injoignable }
       reponse.fetch("entities", {}).each do |entite, donnees|
         fichier = donnees.dig("claims", "P18", 0, "mainsnak", "datavalue", "value")
         images[entite] = "File:#{fichier}" if fichier
@@ -262,7 +266,7 @@ class Photo < ApplicationRecord
   def self.pages_commons(titres)
     titres.each_slice(50).each_with_object({}) do |lot, pages|
       requete = URI.encode_www_form(action: "query", prop: "imageinfo", iiprop: "url|extmetadata", iiurlwidth: 1024, format: "json", titles: lot.join("|"))
-      reponse = lire_json(URI("#{COMMONS_API}?#{requete}")) or next
+      reponse = lire_json(URI("#{COMMONS_API}?#{requete}")) or next lot.each { pages[it] = :injoignable }
       reponse.dig("query", "pages")&.each_value { pages[it["title"]] = it }
     end
   end
@@ -305,7 +309,7 @@ class Photo < ApplicationRecord
     def image_recevable
       return unless image.attached?
 
-      errors.add(:image, :not_an_image) unless image.content_type.to_s.start_with?("image/")
+      errors.add(:image, :not_an_image) unless TYPES_IMAGE.include?(image.content_type)
       errors.add(:image, :too_large) if image.byte_size.to_i > TAILLE_MAX
     end
 end
