@@ -8,13 +8,14 @@ class PanoramaxMoissonTest < ActiveSupport::TestCase
   def cliché(lat:, lon:, azimut:, date: "2025-06-12", champ: 90, id: "abc", licence: "etalab-2.0")
     {
       "id" => id,
+      "collection" => "col-1",
       "geometry" => { "coordinates" => [ lon, lat ] },
       "assets" => { "sd" => { "href" => "https://panoramax.test/#{id}/sd.jpg" } },
       "properties" => {
         "datetime" => "#{date}T10:00:00+00:00",
         "license" => licence,
         "geovisio:producer" => "Service départemental",
-        "collection" => "col-1",
+        "collection" => { "semantics" => [] },
         "view:azimuth" => azimut,
         "pers:interior_orientation" => { "field_of_view" => champ }
       }
@@ -98,7 +99,7 @@ class PanoramaxMoissonTest < ActiveSupport::TestCase
 
   test "la moisson évince les observations distantes qu'elle ne retient plus" do
     ancienne = Photo.create!(roundabout: @roundabout, taken_on: "2019-01-01", author: "x", licence: "y",
-      source_url: "https://s", image_url: "https://panoramax.test/ancienne/sd.jpg")
+      source_url: "#{Photo::PANORAMAX_API}/collections/c/items/ancienne", image_url: "https://panoramax.test/ancienne/sd.jpg")
 
     perimees = Photo.perimees(@roundabout, [ "https://panoramax.test/abc/sd.jpg" ])
 
@@ -107,9 +108,39 @@ class PanoramaxMoissonTest < ActiveSupport::TestCase
 
   test "une moisson vide évince toutes les observations distantes de l'ouvrage" do
     Photo.create!(roundabout: @roundabout, taken_on: "2019-01-01", author: "x", licence: "y",
-      source_url: "https://s", image_url: "https://panoramax.test/ancienne/sd.jpg")
+      source_url: "#{Photo::PANORAMAX_API}/collections/c/items/ancienne", image_url: "https://panoramax.test/ancienne/sd.jpg")
 
     assert_equal 1, Photo.perimees(@roundabout, []).count
+  end
+
+  test "l'éviction épargne les observations distantes qui ne viennent pas de Panoramax" do
+    commons = Photo.create!(roundabout: @roundabout, taken_on: "2021-01-21", author: "x", licence: "CC BY-SA 4.0",
+      source_url: "https://commons.wikimedia.org/wiki/File:Place.jpg", image_url: "https://upload.wikimedia.org/place.jpg")
+
+    assert_not_includes Photo.perimees(@roundabout, []), commons
+  end
+
+  test "l'emprise de recherche vaut quatre rayons et au moins soixante mètres" do
+    etoile = Roundabout.new(lat: 48.873792, lon: 2.295028, diameter_m: 137.6)
+
+    assert_in_delta 275.2, Photo.emprise_m(etoile), 0.1
+    assert_equal Photo::MOISSON_RAYON_M, Photo.emprise_m(Roundabout.new(lat: 0, lon: 0, diameter_m: 20))
+    assert_equal Photo::MOISSON_RAYON_M, Photo.emprise_m(Roundabout.new(lat: 0, lon: 0))
+  end
+
+  test "la recherche Panoramax couvre l'emprise de l'ouvrage sans plafond à deux cents clichés" do
+    etoile = Roundabout.new(lat: 48.873792, lon: 2.295028, diameter_m: 137.6)
+    adresses = []
+
+    avec_lecture_distante(->(adresse) { adresses << adresse; { "features" => [] } }) do
+      Photo.interroger_panoramax(etoile)
+    end
+
+    parametres = Rack::Utils.parse_query(adresses.sole.query)
+    ouest, sud, est, nord = parametres["bbox"].split(",").map(&:to_f)
+    assert_in_delta 550.4, (nord - sud) * 111_320.0, 1.0
+    assert_in_delta 550.4, (est - ouest) * 111_320.0 * Math.cos(etoile.lat.to_f * Math::PI / 180), 1.0
+    assert_equal "10000", parametres["limit"]
   end
 
   test "l'éviction épargne les observations versées à la main" do

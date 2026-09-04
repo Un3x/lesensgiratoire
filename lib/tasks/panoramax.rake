@@ -1,11 +1,11 @@
 namespace :panoramax do
   desc "Moissonne les prises de vue Panoramax autour des ronds-points illustrables"
-  task :moisson, [ :depuis, :combien ] => :environment do |_tache, args|
+  task :moisson, [ :depuis, :combien, :regime ] => :environment do |_tache, args|
     depuis = args[:depuis].to_i
     combien = (args[:combien] || 500).to_i
 
-    ouvrages = Roundabout.where(id: Photo.where.not(image_url: nil).select(:roundabout_id))
-      .order(:id).offset(depuis).limit(combien)
+    ouvrages = args[:regime].present? ? Roundabout.public_send(args[:regime]) : Roundabout.where(id: Photo.where.not(image_url: nil).select(:roundabout_id))
+    ouvrages = ouvrages.order(:id).offset(depuis).limit(combien)
 
     puts "Moisson sur #{ouvrages.count} ouvrages, à partir du rang #{depuis}."
     releve = Photo.moissonner_panoramax(ouvrages)

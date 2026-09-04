@@ -8,7 +8,12 @@ class Photo < ApplicationRecord
   INCLINAISON_DEFAUT_DEG = -12.0
   CHAMP_VUE_DEFAUT_DEG = 75.0
   PANORAMAX_API = "https://api.panoramax.xyz/api"
+  OSM_API = "https://api.openstreetmap.org/api/0.6"
+  WIKIDATA_API = "https://www.wikidata.org/w/api.php"
+  COMMONS_API = "https://commons.wikimedia.org/w/api.php"
+  USER_AGENT = "lesensgiratoire (recensement des ronds-points)"
   MOISSON_RAYON_M = 60
+  MOISSON_LIMITE = 10_000
   DATES_MAX_PAR_OUVRAGE = 6
 
   belongs_to :roundabout
@@ -62,7 +67,7 @@ class Photo < ApplicationRecord
   end
 
   def self.perimees(roundabout, adresses)
-    distantes = where(roundabout: roundabout).where.not(image_url: nil)
+    distantes = where(roundabout: roundabout).where("source_url LIKE ?", "#{PANORAMAX_API}%")
 
     adresses.any? ? distantes.where.not(image_url: adresses) : distantes
   end
@@ -93,7 +98,7 @@ class Photo < ApplicationRecord
       "date" => proprietes["datetime"].to_s.first(10),
       "licence" => proprietes["license"],
       "auteur" => proprietes["geovisio:producer"],
-      "source" => "#{PANORAMAX_API}/collections/#{proprietes["collection"]}/items/#{cliché["id"]}",
+      "source" => "#{PANORAMAX_API}/collections/#{cliché["collection"]}/items/#{cliché["id"]}",
       "ecart_deg" => ecart_de_visee(lat, lon, proprietes["view:azimuth"], roundabout),
       "rapport" => rayon.positive? ? roundabout.distance_to(lat, lon) / rayon : nil,
       "champ_deg" => proprietes.dig("pers:interior_orientation", "field_of_view"),
@@ -191,20 +196,87 @@ class Photo < ApplicationRecord
     observation["champ_deg"].to_f >= CHAMP_PANORAMIQUE_DEG && observation["cap_deg"].present?
   end
 
-  def self.interroger_panoramax(roundabout, rayon_m: MOISSON_RAYON_M)
+  def self.emprise_m(roundabout)
+    [ MOISSON_RAYON_M, 4 * roundabout.diameter_m.to_f / 2 ].max
+  end
+
+  def self.interroger_panoramax(roundabout)
     lat = roundabout.lat.to_f
     lon = roundabout.lon.to_f
-    dlat = rayon_m / 111_320.0
+    dlat = emprise_m(roundabout) / 111_320.0
     dlon = dlat / Math.cos(lat * Math::PI / 180)
     emprise = [ lon - dlon, lat - dlat, lon + dlon, lat + dlat ].join(",")
 
-    adresse = URI("#{PANORAMAX_API}/search?bbox=#{emprise}&limit=200")
-    reponse = Net::HTTP.start(adresse.host, adresse.port, use_ssl: true, open_timeout: 10, read_timeout: 30) do
-      it.request(Net::HTTP::Get.new(adresse, "User-Agent" => "lesensgiratoire (recensement des ronds-points)"))
+    lire_json(URI("#{PANORAMAX_API}/search?bbox=#{emprise}&limit=#{MOISSON_LIMITE}"))&.fetch("features", [])
+  end
+
+  def self.illustrer_depuis_commons(roundabouts, releve = releve_vierge)
+    roundabouts = roundabouts.to_a
+    wikidata = wikidata_des_ways(roundabouts.flat_map(&:osm_way_ids))
+    return releve.tap { it[:injoignables] += roundabouts.size } if wikidata.nil?
+
+    fichiers = images_wikidata(wikidata.values.uniq)
+    pages = pages_commons(fichiers.values.uniq)
+
+    roundabouts.each do |roundabout|
+      entite = roundabout.osm_way_ids.filter_map { wikidata[it] }.first or next
+      page = pages[fichiers[entite]] or next
+      observation = observation_commons(page, roundabout)
+      observation ? verser(observation, releve) : releve[:refusees] << "#{page["title"]} : date de prise de vue absente"
+    end
+
+    releve
+  end
+
+  def self.wikidata_des_ways(way_ids)
+    way_ids.each_slice(250).each_with_object({}) do |lot, tags|
+      reponse = lire_json(URI("#{OSM_API}/ways.json?ways=#{lot.join(",")}")) or return
+      reponse.fetch("elements", []).each { tags[it["id"]] = it.dig("tags", "wikidata") if it.dig("tags", "wikidata") }
+    end
+  end
+
+  def self.images_wikidata(entites)
+    entites.each_slice(50).each_with_object({}) do |lot, images|
+      reponse = lire_json(URI("#{WIKIDATA_API}?action=wbgetentities&props=claims&format=json&ids=#{lot.join("|")}")) or next
+      reponse.fetch("entities", {}).each do |entite, donnees|
+        fichier = donnees.dig("claims", "P18", 0, "mainsnak", "datavalue", "value")
+        images[entite] = "File:#{fichier}" if fichier
+      end
+    end
+  end
+
+  def self.pages_commons(titres)
+    titres.each_slice(50).each_with_object({}) do |lot, pages|
+      requete = URI.encode_www_form(action: "query", prop: "imageinfo", iiprop: "url|extmetadata", iiurlwidth: 1024, format: "json", titles: lot.join("|"))
+      reponse = lire_json(URI("#{COMMONS_API}?#{requete}")) or next
+      reponse.dig("query", "pages")&.each_value { pages[it["title"]] = it }
+    end
+  end
+
+  def self.observation_commons(page, roundabout)
+    info = page.dig("imageinfo", 0) or return
+    metadonnees = info.fetch("extmetadata", {})
+    date = metadonnees.dig("DateTimeOriginal", "value").to_s.first(10)
+    return unless date.match?(/\A\d{4}-\d{2}-\d{2}\z/)
+
+    {
+      "lat" => roundabout.lat.to_f,
+      "lon" => roundabout.lon.to_f,
+      "url" => info["thumburl"],
+      "date" => date,
+      "licence" => metadonnees.dig("LicenseShortName", "value"),
+      "auteur" => ActionView::Base.full_sanitizer.sanitize(metadonnees.dig("Artist", "value").to_s),
+      "source" => info["descriptionurl"]
+    }
+  end
+
+  def self.lire_json(adresse)
+    reponse = Net::HTTP.start(adresse.host, adresse.port, use_ssl: true, open_timeout: 10, read_timeout: 60) do
+      it.request(Net::HTTP::Get.new(adresse, "User-Agent" => USER_AGENT))
     end
     return unless reponse.is_a?(Net::HTTPSuccess)
 
-    JSON.parse(reponse.body).fetch("features", [])
+    JSON.parse(reponse.body)
   rescue StandardError
     nil
   end

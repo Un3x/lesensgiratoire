@@ -37,6 +37,8 @@ bin/rubocop          # rails-omakase
 
 bin/rails "panoramax:import[db/seeds/photos_panoramax.jsonl.gz]"   # observations Panoramax depuis un fichier
 bin/rails "panoramax:moisson[0,3000]"                            # timelines depuis l'API Panoramax (rang, décompte)
+bin/rails "panoramax:moisson[0,700,circular]"                    # idem sur un régime de priorité (scope Roundabout)
+bin/rails commons:illustrer                                      # image Wikidata P18 des ouvrages à priorité à l'entrant, référencée depuis Commons
 bin/rails "recensement:circulaires[db/seeds/roundabouts_france.json.gz,sortie.json.gz]"  # ajoute les ways junction=circular relevés sur Overpass
 ```
 

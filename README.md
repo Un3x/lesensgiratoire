@@ -43,8 +43,8 @@ Rafraîchissements futurs : extrait Geofabrik France `.osm.pbf` filtré par `osm
 
 | Étape | Source / critère | Résultat |
 |---|---|---|
-| Tags OSM | `mapillary`, `wikidata` P18, `image`, `wikimedia_commons`, `panoramax` | 21 ouvrages illustrables sur 60 047. Voie abandonnée |
-| Panoramax par emprise | API par bbox de 50 m autour du centroïde | 50 % des ouvrages couverts |
+| Tags OSM | `mapillary`, `wikidata` P18, `image`, `wikimedia_commons`, `panoramax` | 21 ouvrages illustrables sur 60 047. Voie abandonnée, sauf `wikidata` P18 pour les ouvrages à priorité à l'entrant : 6 images Commons référencées avec leur attribution (`commons:illustrer`) |
+| Panoramax par emprise | API par bbox autour du centroïde, demi-côté = max(60 m, 4 rayons) pour que les grandes places trouvent des caméras à distance/rayon entre 1,2 et 4 | 50 % des ouvrages couverts |
 | Exclusion 360° | `pers:interior_orientation.field_of_view >= 300` | 28 % restants |
 | Visée et distance | `view:azimuth` pointant vers l'ouvrage à ± un demi-champ, rapport distance/rayon entre 1,2 et 4, tri par proximité de 2 | 2 770 ouvrages illustrés (4,6 %) |
 | Reprojection 360° | Équirectangulaire, x = 0 au nord géographique, champ ~75°, 16/9, inclinaison −12°, calcul dans le navigateur sur canvas | ~21 000 ouvrages supplémentaires, moisson en cours |

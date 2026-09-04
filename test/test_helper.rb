@@ -11,5 +11,13 @@ module ActiveSupport
     fixtures :all
 
     include ActionDispatch::TestProcess::FixtureFile
+
+    def avec_lecture_distante(lecture)
+      Photo.singleton_class.alias_method :lire_json_reelle, :lire_json
+      Photo.define_singleton_method(:lire_json, &lecture)
+      yield
+    ensure
+      Photo.singleton_class.alias_method :lire_json, :lire_json_reelle
+    end
   end
 end
